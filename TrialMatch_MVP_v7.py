@@ -22,9 +22,7 @@ import re
 # === 1. Set up OpenAI ===
 # NOTE: Keeping your original initialization to avoid breaking behavior.
 # Consider moving secrets to environment variables or st.secrets for security.
-client = OpenAI(api_key = 'sk-proj-lm9qxBkyfEhKgh2kfWDlrtx7ajfNE1NHqoD0n1RI_'
-                  'ZLvq1l8HCqMzUv5B1ECi6-JaFcMGWDAdQT3BlbkFJ4y8MiKoP-'
-                  'ZaucRQKUL5zNoOub9yTDJNMKWGzb1tKTbYVCH8VTX17vpedZDRuFifWFP2edopDoA')
+client = OpenAI(api_key=st.secrets["openai"]["api_key"])
 
 # === 2. Page Setup ===
 st.set_page_config(page_title="TrialMatch Recruiter", page_icon="🧪")

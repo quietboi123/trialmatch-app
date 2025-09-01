@@ -110,6 +110,7 @@ def persist_result(reply_text: str, session_id: str = None):
         "trial_title": trial_title,
         "decision": decision,                 # always include the decision
         "rationale": rationale,
+        "asked_questions": questions,
         "answers": answers,
         "parsed_rules": parsed_rules,
         "contact_email": contact_email,

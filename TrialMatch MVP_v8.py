@@ -118,10 +118,8 @@ def persist_result(reply_text: str, session_id: str = None):
 def is_final_decision(reply_text: str) -> bool:
     """
     Returns True only when the assistant has reached a final decision.
-    Two signals:
-      1) The reply contains a JSON block whose top-level key 'final' is True, or
-      2) The reply contains the exact sentinel sentence:
-         'YOUR ELIGIBILITY HAS BEEN DETERMINED.' (case-insensitive check)
+    One signal:
+      1) The reply contains a JSON block whose top-level key 'final' is True
     """
     data = extract_last_json_block(reply_text)
     if isinstance(data, dict) and data.get("final") is True:

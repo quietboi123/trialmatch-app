@@ -71,6 +71,7 @@ def persist_result(reply_text: str, session_id: str = None):
     Saves to Supabase on ANY decision (Eligible, Likely Eligible, Likely Ineligible, Unknown).
     Also saves the consent flag exactly as answered (True/False).
     Adds a timestamp at insert time (sets created_at explicitly in UTC).
+    NOW ALSO saves the ordered list of questions asked as 'questions' (JSONB).
     """
     sb = get_supabase()
     data = extract_last_json_block(reply_text)
@@ -90,6 +91,14 @@ def persist_result(reply_text: str, session_id: str = None):
         parsed_rules = data.get("parsed_rules")
         contact = data.get("contact_info") or {}
         trial_title = (parsed_rules or {}).get("trial_title")
+        # Accept either 'asked_questions' (preferred) or 'questions' if model uses that key
+        questions = data.get("asked_questions") or data.get("questions")  # <— NEW
+
+        # Optional: ensure questions is a list of strings (defensive)
+        if questions is not None and not isinstance(questions, list):
+            questions = [str(questions)]
+        if isinstance(questions, list):
+            questions = [str(q) for q in questions]
 
     consent_val = _as_bool(contact.get("consent"))
     contact_email = contact.get("email")

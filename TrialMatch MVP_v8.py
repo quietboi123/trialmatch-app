@@ -114,6 +114,20 @@ def persist_result(reply_text: str, session_id: str = None):
         return True, "Saved."
     except Exception as e:
         return False, f"DB error: {e}"
+    
+def is_final_decision(reply_text: str) -> bool:
+    """
+    Returns True only when the assistant has reached a final decision.
+    Two signals:
+      1) The reply contains a JSON block whose top-level key 'final' is True, or
+      2) The reply contains the exact sentinel sentence:
+         'YOUR ELIGIBILITY HAS BEEN DETERMINED.' (case-insensitive check)
+    """
+    data = extract_last_json_block(reply_text)
+    if isinstance(data, dict) and data.get("final") is True:
+        return True
+    return False
+
 
 # === 2. Page Setup ===
 st.set_page_config(page_title="TrialMatch Recruiter", page_icon="🧪")
@@ -141,7 +155,7 @@ You are Pre-Screen PA, a clinical trial pre-screening assistant. Your job is to:
 2) Immediately act as if you are interviewing a patient with the fewest, most important questions (see rules below).
 3) Maximize the chances of the patient answering all of your questions by keeping them engaged and occasionally positively reinforcing them if their answers make them eligible.
 4) Decide: Eligible / Likely Eligible / Likely Ineligible / Unknown, with a rationale tied to exact criteria.
-5) If a patient is Eligible, ask for their email, phone number, and consent to be contacted.
+5) If a patient is Eligible or Likely Eligible, prompt them for their email, phone number, and consent to be contacted.
 6) Output a clear summary and machine-readable JSON for CRM/CSV export.
 
 Tone & Boundaries
@@ -184,12 +198,17 @@ Operating Loop
 2) Plan interview silently. Pick top 3–5 questions only.
 3) Immediately begin asking questions one at a time in a patient-facing style.
 4) Stop early if exclusion criteria are met.
-5) If patient is Eligible, PROMPT them (not ask) for their email and phone number and consent to be contacted.
+5) When you reach your final eligibiliy decision, if patient is Eligible or Likely Eligible, PROMPT them (not ask) for their email and phone number and consent to be contacted.
 6) After questions, produce decision + outputs:
    - Readable summary (5–10 lines)
    - Decision (Eligible / Likely Eligible / Likely Ineligible / Unknown) with rationale referencing specific criteria
    - Next steps / missing info
-   - Machine-readable JSON object with keys: decision, rationale, asked_questions, answers, missing_info, parsed_rules, contact_info (with keys: email, phone, consent: true/false; include contact_info only after the patient explicitly consents)
+   - machine-readable JSON object with keys:
+  decision, rationale, asked_questions, answers, missing_info, parsed_rules,
+  contact_info (with keys: email, phone, consent: true/false),
+  and also include: final: true
+   - Do NOT output the machine-readable JSON until you have finished questioning and reached a final decision.
+
 
 Parsing Rules
 - Normalize units; convert “within X months” into explicit windows.
@@ -230,10 +249,9 @@ if prompt := st.chat_input("Paste criteria first, then answer questions one at a
     st.session_state.messages.append({"role": "assistant", "content": reply})
     st.chat_message("assistant").markdown(reply)
 
-    # Save to Supabase whenever a decision appears (any decision class), and include consent.
-    lower = reply.lower()
-    decision_markers = ["decision:", "eligible", "likely eligible", "likely ineligible", "unknown"]
-    if any(m in lower for m in decision_markers):
+
+    # Save only when the final decision is emitted (guarded by sentinel/JSON 'final': true)
+    if is_final_decision(reply):
         st.session_state.intake_complete = True
 
         ok, msg = persist_result(
@@ -241,6 +259,7 @@ if prompt := st.chat_input("Paste criteria first, then answer questions one at a
             session_id=st.session_state.get("_session_id")
         )
         if ok:
-            st.toast("✅ Saved to Supabase (decision + consent + answers).")
+            st.toast("✅ Saved final decision + consent + answers to Supabase.")
         else:
             st.caption(f"Note: {msg}")
+      

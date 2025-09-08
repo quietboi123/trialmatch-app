@@ -1,14 +1,13 @@
 # -*- coding: utf-8 -*-
 """
-TrialMatch Recruiter (v8, preset criteria)
-- Same flow, same JSON extraction, same Supabase persistence.
-- Change: app now starts with pre-set inclusion/exclusion criteria (no user paste).
+TrialMatch Recruiter (v8, preset criteria, hidden JSON)
+- Uses pre-set inclusion/exclusion criteria (no user prompt for criteria).
+- Persists the model's final JSON to Supabase, but strips/hides JSON from the chat UI.
 """
 
 import streamlit as st
 from openai import OpenAI
 from supabase import create_client, Client
-import os
 import json
 import re
 from datetime import datetime, timezone
@@ -46,10 +45,8 @@ def criteria_to_markdown(criteria: dict) -> str:
 # =========================
 # 1) CLIENTS
 # =========================
-# OpenAI from Streamlit secrets
 client = OpenAI(api_key=st.secrets["openai"]["api_key"])
 
-# Supabase from Streamlit secrets
 def get_supabase() -> Client:
     return create_client(
         st.secrets["supabase"]["url"],
@@ -57,7 +54,7 @@ def get_supabase() -> Client:
     )
 
 # =========================
-# 2) HELPERS (unchanged)
+# 2) HELPERS
 # =========================
 def _as_bool(value) -> bool:
     if isinstance(value, bool):
@@ -91,6 +88,17 @@ def extract_last_json_block(text: str):
         return json.loads(candidate)
     except Exception:
         return None
+
+def strip_machine_json(text: str) -> str:
+    """
+    Remove any machine JSON from an assistant reply so users never see it.
+    1) Remove fenced ```json { ... }``` (or ``` { ... } ```)
+    2) Remove a trailing standalone {...} block if present
+    """
+    without_fenced = re.sub(r"```(?:json)?\s*{[\s\S]*?}\s*```", "", text).strip()
+    # If there's a raw JSON object at the very end, drop it
+    without_trailing = re.sub(r"\s*{[\s\S]*}\s*$", "", without_fenced).strip()
+    return without_trailing
 
 def persist_result(reply_text: str, session_id: str = None):
     """
@@ -155,7 +163,7 @@ st.markdown("Chat with a friendly assistant to quickly pre-screen for clinical t
 
 # Session state
 if "messages" not in st.session_state:
-    st.session_state.messages = []        # we keep full history here (including hidden seed msg)
+    st.session_state.messages = []        # history to send to model (no machine JSON needed in history)
 if "bootstrapped" not in st.session_state:
     st.session_state.bootstrapped = False
 if "intake_complete" not in st.session_state:
@@ -197,13 +205,19 @@ Operating Loop
 3) Immediately begin asking questions one at a time.
 4) Stop early if exclusion criteria are met.
 5) When you reach your final eligibility decision, if Eligible/Likely Eligible, PROMPT for contact info & consent.
-6) ONLY AFTER the patient provides contact info & consent, produce:
+6) AFTER the patient provides contact info & consent, produce:
    - Readable summary (5–10 lines)
    - Decision with rationale referencing specific criteria
    - Next steps / missing info
    - Machine-readable JSON with keys:
      decision, rationale, asked_questions, answers, missing_info, parsed_rules,
      contact_info (email, phone, consent: true/false), final: true
+
+IMPORTANT (UI hygiene)
+- Put the machine-readable JSON in a single fenced JSON block (```json ... ```).
+- Do not include any other code blocks that look like JSON.
+- The human-facing text should be complete WITHOUT the JSON (summary + next steps + disclaimer).
+- The JSON is for backend use; the patient should not need to see it.
 
 Parsing Rules
 - Normalize units; convert time windows explicitly.
@@ -224,19 +238,19 @@ Always include the disclaimer: “This is a preliminary screen based on the prov
 # =========================
 if USE_PRESET_CRITERIA and not st.session_state.bootstrapped:
     criteria_md = criteria_to_markdown(PRESET_CRITERIA)
-
-    # Store as a hidden "user" message so the model keeps context; don't render it in UI.
+    # Store as a hidden "user" message in history; not rendered directly
     st.session_state.messages.append({"role": "user", "content": criteria_md, "hide": True})
 
-    # Get first assistant message (kick off interview)
     response = client.chat.completions.create(
         model="gpt-4o",
         messages=[{"role": "system", "content": system_prompt}] + st.session_state.messages,
         temperature=0.4,
     )
-    first_reply = response.choices[0].message.content.strip()
-    st.session_state.messages.append({"role": "assistant", "content": first_reply})
+    first_reply_raw = response.choices[0].message.content.strip()
+    first_reply_display = strip_machine_json(first_reply_raw)
 
+    # We only store/display the stripped version in chat history shown to the user
+    st.session_state.messages.append({"role": "assistant", "content": first_reply_display})
     st.session_state.bootstrapped = True
 
 # =========================
@@ -260,19 +274,23 @@ if user_text := st.chat_input(placeholder):
         messages=[{"role": "system", "content": system_prompt}] + st.session_state.messages,
         temperature=0.4,
     )
-    reply = response.choices[0].message.content.strip()
+    raw_reply = response.choices[0].message.content.strip()
 
-    st.session_state.messages.append({"role": "assistant", "content": reply})
-    st.chat_message("assistant").markdown(reply)
-
-    # Save only when the final decision JSON is emitted
-    if is_final_decision(reply):
+    # Persist decision & consent if final, BEFORE stripping for display
+    if is_final_decision(raw_reply):
         st.session_state.intake_complete = True
         ok, msg = persist_result(
-            reply_text=reply,
+            reply_text=raw_reply,
             session_id=st.session_state.get("_session_id")
         )
         if ok:
             st.toast("✅ Saved final decision + consent + answers to Supabase.")
         else:
             st.caption(f"Note: {msg}")
+
+    # Always strip machine JSON before showing to the user
+    display_reply = strip_machine_json(raw_reply)
+
+    # Append/display stripped assistant message
+    st.session_state.messages.append({"role": "assistant", "content": display_reply})
+    st.chat_message("assistant").markdown(display_reply)

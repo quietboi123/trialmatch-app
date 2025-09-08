@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 """
-TrialMatch Recruiter (v8, preset criteria, hidden JSON, contact form)
-- Uses pre-set inclusion/exclusion criteria (no user prompt for criteria).
-- Hides the machine JSON from the UI, but still parses & saves it to Supabase.
-- When ready for contact info, the chat temporarily swaps to a 3-field form:
-    email (text), phone (number-like), consent (checkbox).
+TrialMatch Recruiter (v8, preset criteria, hidden JSON, contact form, auto-rerun fix)
+- Pre-set inclusion/exclusion criteria (no user paste)
+- Hides machine JSON from the UI, still saves to Supabase
+- Switches to a 3-field form (email, phone, consent) when contact info is needed
+- Immediately shows the form on the same turn (st.rerun) so the chat doesn't look "stuck"
 """
 
 import streamlit as st
@@ -17,8 +17,8 @@ from datetime import datetime, timezone
 # =========================
 # 0) CONFIG: PRESET CRITERIA
 # =========================
-USE_PRESET_CRITERIA = True  # keep True to avoid prompting for criteria
-CONTACT_TOKEN = "[CONTACT_INFO_FORM]"  # sentinel emitted by the model to request the form
+USE_PRESET_CRITERIA = True
+CONTACT_TOKEN = "[CONTACT_INFO_FORM]"  # sentinel the model outputs to trigger the form
 
 PRESET_CRITERIA = {
     "title": "MDD / TRD Outpatient Study (Example)",
@@ -94,10 +94,7 @@ def extract_last_json_block(text: str):
 
 def strip_machine_json(text: str) -> str:
     """
-    Remove any machine JSON from an assistant reply so users never see it.
-    1) Remove fenced ```json { ... }``` (or ``` { ... } ```)
-    2) Remove a trailing standalone {...} block if present
-    3) Remove the contact token if present (token is for UI only)
+    Hide machine JSON & the contact token from user-visible content.
     """
     t = re.sub(r"```(?:json)?\s*{[\s\S]*?}\s*```", "", text).strip()
     t = re.sub(r"\s*{[\s\S]*}\s*$", "", t).strip()
@@ -106,7 +103,7 @@ def strip_machine_json(text: str) -> str:
 
 def persist_result(reply_text: str, session_id: str = None):
     """
-    Saves to Supabase on ANY decision. (Keeps same schema/behavior.)
+    Saves to Supabase on ANY decision.
     Fields: created_at, trial_title, decision, rationale, asked_questions, answers,
             parsed_rules, contact_email, contact_phone, consent, session_id
     """
@@ -159,16 +156,27 @@ def is_final_decision(reply_text: str) -> bool:
     return bool(isinstance(data, dict) and data.get("final") is True)
 
 def looks_like_phone(s: str) -> bool:
-    """Basic phone validation: allow digits and common symbols, ensure 10-15 digits total."""
+    """Basic phone validation: allow digits and common symbols, ensure 10–15 digits total."""
     digits = re.sub(r"\D", "", s or "")
     return 10 <= len(digits) <= 15
 
 def normalize_phone(s: str) -> str:
-    """Return just digits for consistency; model/DB don't require formatting."""
     return re.sub(r"\D", "", s or "")
 
 def looks_like_email(s: str) -> bool:
     return bool(re.match(r"^[^@\s]+@[^@\s]+\.[^@\s]+$", s or ""))
+
+def should_trigger_contact_form(text: str) -> bool:
+    """
+    Robust trigger: token OR common phrasing asking for email/phone/consent.
+    """
+    if CONTACT_TOKEN in (text or ""):
+        return True
+    if re.search(r"\b(email|e-mail)\b", text or "", re.I) and re.search(r"\b(phone|number)\b", text or "", re.I):
+        return True
+    if re.search(r"\bconsent\b", text or "", re.I) and re.search(r"\bcontact(ed)?\b", text or "", re.I):
+        return True
+    return False
 
 # =========================
 # 3) STREAMLIT PAGE
@@ -179,7 +187,7 @@ st.markdown("Chat with a friendly assistant to quickly pre-screen for clinical t
 
 # Session state
 if "messages" not in st.session_state:
-    st.session_state.messages = []        # full history we send to the model (hide seed)
+    st.session_state.messages = []        # full history sent to model (seed hidden)
 if "bootstrapped" not in st.session_state:
     st.session_state.bootstrapped = False
 if "intake_complete" not in st.session_state:
@@ -241,7 +249,6 @@ Always include the disclaimer: “This is a preliminary screen based on the prov
 # =========================
 if USE_PRESET_CRITERIA and not st.session_state.bootstrapped:
     criteria_md = criteria_to_markdown(PRESET_CRITERIA)
-    # Hidden seed "user" message (not rendered)
     st.session_state.messages.append({"role": "user", "content": criteria_md, "hide": True})
 
     response = client.chat.completions.create(
@@ -249,13 +256,19 @@ if USE_PRESET_CRITERIA and not st.session_state.bootstrapped:
         messages=[{"role": "system", "content": system_prompt}] + st.session_state.messages,
         temperature=0.4,
     )
-    first_reply_raw = response.choices[0].message.content.strip()
-    # Detect if model already requested contact form (unusual but safe)
-    if CONTACT_TOKEN in first_reply_raw:
-        st.session_state.awaiting_contact = True
-    first_reply_display = strip_machine_json(first_reply_raw)
+    first_raw = response.choices[0].message.content.strip()
 
-    st.session_state.messages.append({"role": "assistant", "content": first_reply_display})
+    if should_trigger_contact_form(first_raw):
+        st.session_state.awaiting_contact = True
+        display_text = "Great—based on your answers, you're likely a fit. Please complete the short contact form below."
+        st.session_state.messages.append({"role": "assistant", "content": display_text})
+        st.rerun()
+
+    first_display = strip_machine_json(first_raw)
+    if not first_display:
+        first_display = "Thanks. Let's get started—I'll ask a few quick questions."
+    st.session_state.messages.append({"role": "assistant", "content": first_display})
+
     st.session_state.bootstrapped = True
 
 # =========================
@@ -267,7 +280,7 @@ for msg in st.session_state.messages:
     st.chat_message(msg["role"]).markdown(msg["content"])
 
 # =========================
-# 7) CONTACT FORM (shown only when the model requests it)
+# 7) CONTACT FORM (shown only when requested)
 # =========================
 def render_contact_form():
     with st.form("contact_form", clear_on_submit=False):
@@ -296,7 +309,7 @@ def render_contact_form():
 if st.session_state.awaiting_contact:
     contact = render_contact_form()
     if contact:
-        # Inform the model of contact info in a clean, structured user turn
+        # add a structured user turn with the form info
         contact_text = (
             "Here is my contact information from the form:\n"
             f"Email: {contact['email']}\n"
@@ -306,7 +319,7 @@ if st.session_state.awaiting_contact:
         st.session_state.messages.append({"role": "user", "content": contact_text})
         st.chat_message("user").markdown("Submitted contact details ✅")
 
-        # Resume model to produce final summary + JSON (JSON remains hidden in UI)
+        # continue: produce final summary + JSON (hidden), then persist
         response = client.chat.completions.create(
             model="gpt-4o",
             messages=[{"role": "system", "content": system_prompt}] + st.session_state.messages,
@@ -314,7 +327,6 @@ if st.session_state.awaiting_contact:
         )
         raw_reply = response.choices[0].message.content.strip()
 
-        # Save before stripping (we need the JSON)
         if is_final_decision(raw_reply):
             st.session_state.intake_complete = True
             ok, msg = persist_result(
@@ -330,14 +342,16 @@ if st.session_state.awaiting_contact:
         st.session_state.messages.append({"role": "assistant", "content": display_reply})
         st.chat_message("assistant").markdown(display_reply)
 
-        # Exit form mode
         st.session_state.awaiting_contact = False
+        st.rerun()
 
 # =========================
 # 8) CHAT INPUT (disabled while awaiting contact form)
 # =========================
-placeholder = "Answer the PA's question here..."
-if not st.session_state.awaiting_contact:
+if st.session_state.awaiting_contact:
+    st.info("Please complete the contact form above to continue.")
+else:
+    placeholder = "Answer the PA's question here..."
     if user_text := st.chat_input(placeholder):
         st.session_state.messages.append({"role": "user", "content": user_text})
         st.chat_message("user").markdown(user_text)
@@ -349,9 +363,16 @@ if not st.session_state.awaiting_contact:
         )
         raw_reply = response.choices[0].message.content.strip()
 
-        # If the model signals the contact form, enter form mode (don't persist yet)
-        if CONTACT_TOKEN in raw_reply:
+        # If the model signals the form (token or phrase), show it immediately
+        if should_trigger_contact_form(raw_reply):
             st.session_state.awaiting_contact = True
+
+            # Put something visible instead of a blank bubble
+            visible = strip_machine_json(raw_reply).strip()
+            if not visible:
+                visible = "Great—you're likely a fit. Please complete the short contact form below."
+            st.session_state.messages.append({"role": "assistant", "content": visible})
+            st.rerun()
 
         # Persist only on final decision (after contact form step)
         if is_final_decision(raw_reply):
@@ -366,7 +387,6 @@ if not st.session_state.awaiting_contact:
                 st.caption(f"Note: {msg}")
 
         display_reply = strip_machine_json(raw_reply)
-        st.session_state.messages.append({"role": "assistant", "content": display_reply})
-        st.chat_message("assistant").markdown(display_reply)
-else:
-    st.info("Please complete the contact form above to continue.")
+        if display_reply:
+            st.session_state.messages.append({"role": "assistant", "content": display_reply})
+            st.chat_message("assistant").markdown(display_reply)

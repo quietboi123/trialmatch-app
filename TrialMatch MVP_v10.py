@@ -1,10 +1,11 @@
 # -*- coding: utf-8 -*-
 """
-TrialMatch Recruiter (v8, preset criteria, hidden JSON, contact form, auto-rerun fix)
+TrialMatch Recruiter (v8, preset criteria, hidden JSON, contact FORM-as-CARD)
 - Pre-set inclusion/exclusion criteria (no user paste)
 - Hides machine JSON from the UI, still saves to Supabase
 - Switches to a 3-field form (email, phone, consent) when contact info is needed
-- Immediately shows the form on the same turn (st.rerun) so the chat doesn't look "stuck"
+- After submit, shows a read-only "form card" in history (NOT a user bubble),
+  sends contact to the model via a hidden turn, and continues to the closing message.
 """
 
 import streamlit as st
@@ -81,10 +82,7 @@ def _normalize_decision(s: str) -> str:
     return "Unknown"
 
 def extract_last_json_block(text: str):
-    """
-    Parse the last JSON object from assistant reply.
-    Supports ```json ...``` fenced or raw {...}.
-    """
+    """Parse the last JSON object from assistant reply."""
     try:
         blocks = re.findall(r"```(?:json)?\s*({[\s\S]*?})\s*```", text)
         candidate = blocks[-1] if blocks else re.findall(r"({[\s\S]*})", text)[-1]
@@ -93,9 +91,7 @@ def extract_last_json_block(text: str):
         return None
 
 def strip_machine_json(text: str) -> str:
-    """
-    Hide machine JSON & the contact token from user-visible content.
-    """
+    """Hide machine JSON & the contact token from user-visible content."""
     t = re.sub(r"```(?:json)?\s*{[\s\S]*?}\s*```", "", text).strip()
     t = re.sub(r"\s*{[\s\S]*}\s*$", "", t).strip()
     t = t.replace(CONTACT_TOKEN, "").strip()
@@ -167,226 +163,8 @@ def looks_like_email(s: str) -> bool:
     return bool(re.match(r"^[^@\s]+@[^@\s]+\.[^@\s]+$", s or ""))
 
 def should_trigger_contact_form(text: str) -> bool:
-    """
-    Robust trigger: token OR common phrasing asking for email/phone/consent.
-    """
+    """Robust trigger: token OR common phrasing asking for email/phone/consent."""
     if CONTACT_TOKEN in (text or ""):
         return True
     if re.search(r"\b(email|e-mail)\b", text or "", re.I) and re.search(r"\b(phone|number)\b", text or "", re.I):
-        return True
-    if re.search(r"\bconsent\b", text or "", re.I) and re.search(r"\bcontact(ed)?\b", text or "", re.I):
-        return True
-    return False
-
-# =========================
-# 3) STREAMLIT PAGE
-# =========================
-st.set_page_config(page_title="TrialMatch Recruiter", page_icon="🧪")
-st.title("🧪 TrialMatch Recruiter")
-st.markdown("Chat with a friendly assistant to quickly pre-screen for clinical trials.")
-
-# Session state
-if "messages" not in st.session_state:
-    st.session_state.messages = []        # full history sent to model (seed hidden)
-if "bootstrapped" not in st.session_state:
-    st.session_state.bootstrapped = False
-if "intake_complete" not in st.session_state:
-    st.session_state.intake_complete = False
-if "awaiting_contact" not in st.session_state:
-    st.session_state.awaiting_contact = False
-
-# =========================
-# 4) SYSTEM PROMPT
-# =========================
-system_prompt = f"""
-You are Pre-Screen PA, a clinical trial pre-screening assistant. Your job is to:
-1) Parse the provided inclusion/exclusion criteria into structured rules.
-2) Immediately act as if you are interviewing a patient with the fewest, most important questions (see rules below).
-3) Maximize the chances of the patient answering all of your questions by keeping them engaged and occasionally positively reinforcing them if their answers make them eligible.
-4) Decide: Eligible / Likely Eligible / Likely Ineligible / Unknown, with a rationale tied to exact criteria.
-5) If a patient is Eligible or Likely Eligible, the UI will collect email, phone, and consent via a form. When you are ready for that step, output exactly this single token on its own line: {CONTACT_TOKEN}
-6) After the form is submitted, continue with a human-readable summary and a machine-readable JSON object (see keys below). Do NOT show the JSON until after contact info is provided.
-
-Tone & Boundaries
-- Friendly, concise, clinically literate—like a trained PA. Keep the patient engaged.
-- Only ask ONE question at a time, like a real conversation.
-- Never give medical advice or diagnosis—only assess trial fit from provided criteria.
-- Always add the disclaimer: “This is a preliminary screen based on the provided criteria; a clinician must confirm.”
-
-Pre-Screening Efficiency Rule
-- Never ask more than 5 questions total.
-- Default to 3–5 highest-yield, easiest-to-answer questions.
-- Stop early if ineligibility is obvious.
-
-Operating Loop
-1) Parse criteria silently.
-2) Plan interview silently. Pick top 3–5 questions only.
-3) Immediately begin asking questions one at a time.
-4) Stop early if exclusion criteria are met.
-5) When you reach your final decision and the patient is Eligible/Likely Eligible, output the token {CONTACT_TOKEN} to trigger the form (no extra text needed if you prefer).
-6) AFTER the form info is provided by the user, produce:
-   - Readable summary (5–10 lines)
-   - Decision with rationale referencing specific criteria
-   - Next steps / missing info
-   - Machine-readable JSON with keys:
-     decision, rationale, asked_questions, answers, missing_info, parsed_rules,
-     contact_info (email, phone, consent: true/false), final: true
-
-JSON Formatting
-- Place the JSON in a single fenced block: ```json {{ ... }} ```
-- Do not include any other JSON-looking code blocks.
-
-Decision Logic
-- Any exclusion met -> Likely Ineligible.
-- All key inclusions met & no major exclusion -> Likely Eligible.
-- Minimal/critical data missing -> Unknown.
-
-Always include the disclaimer: “This is a preliminary screen based on the provided criteria; a clinician must confirm.”
-"""
-
-# =========================
-# 5) FIRST-RUN BOOTSTRAP: seed criteria & get first assistant turn
-# =========================
-if USE_PRESET_CRITERIA and not st.session_state.bootstrapped:
-    criteria_md = criteria_to_markdown(PRESET_CRITERIA)
-    st.session_state.messages.append({"role": "user", "content": criteria_md, "hide": True})
-
-    response = client.chat.completions.create(
-        model="gpt-4o",
-        messages=[{"role": "system", "content": system_prompt}] + st.session_state.messages,
-        temperature=0.4,
-    )
-    first_raw = response.choices[0].message.content.strip()
-
-    if should_trigger_contact_form(first_raw):
-        st.session_state.awaiting_contact = True
-        display_text = "Great—based on your answers, you're likely a fit. Please complete the short contact form below."
-        st.session_state.messages.append({"role": "assistant", "content": display_text})
-        st.rerun()
-
-    first_display = strip_machine_json(first_raw)
-    if not first_display:
-        first_display = "Thanks. Let's get started—I'll ask a few quick questions."
-    st.session_state.messages.append({"role": "assistant", "content": first_display})
-
-    st.session_state.bootstrapped = True
-
-# =========================
-# 6) DISPLAY CHAT HISTORY (skip hidden seed)
-# =========================
-for msg in st.session_state.messages:
-    if msg.get("hide"):
-        continue
-    st.chat_message(msg["role"]).markdown(msg["content"])
-
-# =========================
-# 7) CONTACT FORM (shown only when requested)
-# =========================
-def render_contact_form():
-    with st.form("contact_form", clear_on_submit=False):
-        st.markdown("**Almost done — please share your contact details:**")
-        email = st.text_input("Email", placeholder="name@example.com")
-        phone = st.text_input("Phone", placeholder="(555) 123-4567 or +1 555 123 4567")
-        consent = st.checkbox("I consent to be contacted about this study.")
-        submitted = st.form_submit_button("Submit")
-        if submitted:
-            errors = []
-            if not looks_like_email(email):
-                errors.append("Please enter a valid email.")
-            if not looks_like_phone(phone):
-                errors.append("Please enter a valid phone number (10–15 digits).")
-            if errors:
-                for e in errors:
-                    st.error(e)
-                return None
-            return {
-                "email": email.strip(),
-                "phone": normalize_phone(phone),
-                "consent": bool(consent),
-            }
-    return None
-
-if st.session_state.awaiting_contact:
-    contact = render_contact_form()
-    if contact:
-        # add a structured user turn with the form info
-        contact_text = (
-            "Here is my contact information from the form:\n"
-            f"Email: {contact['email']}\n"
-            f"Phone: {contact['phone']}\n"
-            f"Consent: {'true' if contact['consent'] else 'false'}"
-        )
-        st.session_state.messages.append({"role": "user", "content": contact_text})
-        st.chat_message("user").markdown("Submitted contact details ✅")
-
-        # continue: produce final summary + JSON (hidden), then persist
-        response = client.chat.completions.create(
-            model="gpt-4o",
-            messages=[{"role": "system", "content": system_prompt}] + st.session_state.messages,
-            temperature=0.4,
-        )
-        raw_reply = response.choices[0].message.content.strip()
-
-        if is_final_decision(raw_reply):
-            st.session_state.intake_complete = True
-            ok, msg = persist_result(
-                reply_text=raw_reply,
-                session_id=st.session_state.get("_session_id")
-            )
-            if ok:
-                st.toast("✅ Saved final decision + consent + answers to Supabase.")
-            else:
-                st.caption(f"Note: {msg}")
-
-        display_reply = strip_machine_json(raw_reply)
-        st.session_state.messages.append({"role": "assistant", "content": display_reply})
-        st.chat_message("assistant").markdown(display_reply)
-
-        st.session_state.awaiting_contact = False
-        st.rerun()
-
-# =========================
-# 8) CHAT INPUT (disabled while awaiting contact form)
-# =========================
-if st.session_state.awaiting_contact:
-    st.info("Please complete the contact form above to continue.")
-else:
-    placeholder = "Answer the PA's question here..."
-    if user_text := st.chat_input(placeholder):
-        st.session_state.messages.append({"role": "user", "content": user_text})
-        st.chat_message("user").markdown(user_text)
-
-        response = client.chat.completions.create(
-            model="gpt-4o",
-            messages=[{"role": "system", "content": system_prompt}] + st.session_state.messages,
-            temperature=0.4,
-        )
-        raw_reply = response.choices[0].message.content.strip()
-
-        # If the model signals the form (token or phrase), show it immediately
-        if should_trigger_contact_form(raw_reply):
-            st.session_state.awaiting_contact = True
-
-            # Put something visible instead of a blank bubble
-            visible = strip_machine_json(raw_reply).strip()
-            if not visible:
-                visible = "Great—you're likely a fit. Please complete the short contact form below."
-            st.session_state.messages.append({"role": "assistant", "content": visible})
-            st.rerun()
-
-        # Persist only on final decision (after contact form step)
-        if is_final_decision(raw_reply):
-            st.session_state.intake_complete = True
-            ok, msg = persist_result(
-                reply_text=raw_reply,
-                session_id=st.session_state.get("_session_id")
-            )
-            if ok:
-                st.toast("✅ Saved final decision + consent + answers to Supabase.")
-            else:
-                st.caption(f"Note: {msg}")
-
-        display_reply = strip_machine_json(raw_reply)
-        if display_reply:
-            st.session_state.messages.append({"role": "assistant", "content": display_reply})
-            st.chat_message("assistant").markdown(display_reply)
+        return

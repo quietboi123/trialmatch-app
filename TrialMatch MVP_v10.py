@@ -7,6 +7,7 @@ TrialMatch Recruiter (v8, preset criteria, hidden JSON, contact form, auto-rerun
 - Immediately shows the form on the same turn (st.rerun) so the chat doesn't look "stuck"
 """
 
+import os  # <-- added
 import streamlit as st
 from openai import OpenAI
 from supabase import create_client, Client
@@ -46,16 +47,59 @@ def criteria_to_markdown(criteria: dict) -> str:
     )
 
 # =========================
-# 1) CLIENTS
+# 1) CLIENTS (works on Streamlit & Render)
 # =========================
-client = OpenAI(api_key=st.secrets["openai"]["api_key"])
+def _get_secret(name_env: str, *secrets_path):
+    """
+    Prefer flat environment variables (Render, GH Actions, etc.).
+    Fall back to nested st.secrets['section']['key'] used on Streamlit Cloud.
+    """
+    val = os.environ.get(name_env)
+    if val:
+        return val
+    try:
+        s = st.secrets
+        for k in secrets_path:
+            s = s[k]
+        return s
+    except Exception:
+        return None
+
+OPENAI_API_KEY = _get_secret("OPENAI_API_KEY", "openai", "api_key")
+SUPABASE_URL = _get_secret("SUPABASE_URL", "supabase", "url")
+SUPABASE_SERVICE_KEY = _get_secret("SUPABASE_SERVICE_KEY", "supabase", "service_key")
+
+# Friendly validation with clear guidance
+_missing = [n for n, v in [
+    ("OPENAI_API_KEY", OPENAI_API_KEY),
+    ("SUPABASE_URL", SUPABASE_URL),
+    ("SUPABASE_SERVICE_KEY", SUPABASE_SERVICE_KEY),
+] if not v]
+
+if _missing:
+    st.error(
+        "Missing required configuration: "
+        + ", ".join(_missing)
+        + ". Set them as environment variables on Render, or add them to st.secrets "
+          "(e.g., st.secrets['openai']['api_key'], st.secrets['supabase']['url'], "
+          "st.secrets['supabase']['service_key'])."
+    )
+    st.stop()
+
+# Initialize clients using resolved secrets
+client = OpenAI(api_key=OPENAI_API_KEY)
 
 def get_supabase() -> Client:
-    return create_client(
-        st.secrets["supabase"]["url"],
-        st.secrets["supabase"]["service_key"]
-    )
+    return create_client(SUPABASE_URL, SUPABASE_SERVICE_KEY)
 
+
+# =========================
+# =========================
+# =========================
+# =========================
+# =========================
+# =========================
+# =========================
 # =========================
 # 2) HELPERS
 # =========================

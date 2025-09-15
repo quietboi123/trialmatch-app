@@ -226,8 +226,8 @@ def should_trigger_contact_form(text: str) -> bool:
 # 3) STREAMLIT PAGE
 # =========================
 st.set_page_config(page_title="TrialMatch Recruiter", page_icon="🧪")
-st.title("🧪 TrialMatch Recruiter")
-st.markdown("Chat with a friendly assistant to quickly pre-screen for clinical trials.")
+st.title("TrialMatch Recruiter")
+st.markdown("Chat with a friendly assistant to quickly pre-screen for an Asthma clinical trial.")
 
 # Session state
 if "messages" not in st.session_state:

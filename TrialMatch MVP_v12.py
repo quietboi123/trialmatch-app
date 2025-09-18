@@ -25,25 +25,20 @@ CONTACT_TOKEN = "[CONTACT_INFO_FORM]"  # sentinel the model outputs to trigger t
 PRESET_CRITERIA = {
     "title": "Combination Short-Acting BroNchodilator and Inhaled Corticosteroid Rescue Therapy on Health Outcomes in Routine Care",
     "inclusion": [
-        "1. Adults aged 18 years and above as of enrollment date.
-2. At least 1 visit with primary or secondary diagnosis of asthma on or within 12 months prior to the enrollment date.
-3. At least 1 prescription filled for Short-acting beta-agonist (SABA)-only inhaler (i.e., albuterol-only or levalbuterol only inhalers) within 12 months before enrollment date.
-4. At least 1 asthma exacerbation within 12 months before enrollment date.
-5. Had both medical and pharmacy insurance coverage (e.g., Medicare, Medicaid, and commercial insurance) for at least 12 months before enrollment date and without foreseeable plans to discontinue insurance coverage within 12 months after enrollment date.
-6. Participants also need to meet each of the following inclusion criteria:
-
-   1. Willingness to use albuterol and budesonide as rescue as instructed by their physician, prescribing information, and United States instruction for use (USIFU).
-   2. Willingness to respond to quarterly safety inquiries.
-   3. Willingness to participate in quarterly electronic patient-reported outcome (PRO) surveys via email or text.
-   4. Physician decision that participant is eligible for treatment with albuterol and budesonide as rescue according to the approved United States prescribing information (USPI)."
+        "1. Adults aged 18 years and above as of enrollment date.",
+	"2. At least 1 visit with primary or secondary diagnosis of asthma on or within 12 months prior to the enrollment date.",
+	"3. At least 1 prescription filled for Short-acting beta-agonist (SABA)-only inhaler (i.e., albuterol-only or levalbuterol only inhalers) within 12 months before enrollment date.",
+	"4. At least 1 asthma exacerbation within 12 months before enrollment date.",
+	"5. Had both medical and pharmacy insurance coverage (e.g., Medicare, Medicaid, and commercial insurance) for at least 12 months before enrollment date and without foreseeable plans to discontinue insurance coverage within 12 months after enrollment date.",
+	"6. Participants also need to meet each of the following inclusion criteria: 1. Willingness to use albuterol and budesonide as rescue as instructed by their physician, prescribing information, and United States instruction for use (USIFU). 2. Willingness to respond to quarterly safety inquiries. 3. Willingness to participate in quarterly electronic patient-reported outcome (PRO) surveys via email or text. 4. Physician decision that participant is eligible for treatment with albuterol and budesonide as rescue according to the approved United States prescribing information (USPI)."
     ],
     "exclusion": [
-        "1. Conditions with major respiratory diagnoses including chronic obstructive pulmonary disease (COPD), cystic fibrosis, pulmonary fibrosis, bronchiectasis, respiratory tract cancer, bronchopulmonary dysplasia, sarcoidosis, lung cancer, interstitial lung disease, pulmonary hypertension, and tuberculosis in 12 months before the enrollment date.
-2. Inpatient admission or emergency department or urgent care visit due to asthma in the 10 days before enrollment date, or self-reported use of systemic corticosteroid for the treatment of asthma in the 10 days before enrollment date. Participants who were screen-failed due to this criterion may be re-screened once the participant is more than 10 days post asthma-related inpatient admission, emergency department or urgent care visit, or systemic corticosteroid use.
-3. Chronic use of oral corticosteroids (for any condition) within 3 months before enrollment date. Chronic use of oral corticosteroids is defined as: daily or every other day use for 14 days or longer.
-4. History of albuterol and budesonide as rescue use within 12 months before enrollment date.
-5. History of any malignancy (except non-melanoma neoplasms of skin) in 12 months before the enrollment date.
-6. For females only - currently pregnant or breastfeeding on enrollment date. Participants are excluded from the study if any of the following criteria apply."
+        "1. Conditions with major respiratory diagnoses including chronic obstructive pulmonary disease (COPD), cystic fibrosis, pulmonary fibrosis, bronchiectasis, respiratory tract cancer, bronchopulmonary dysplasia, sarcoidosis, lung cancer, interstitial lung disease, pulmonary hypertension, and tuberculosis in 12 months before the enrollment date.",
+	"2. Inpatient admission or emergency department or urgent care visit due to asthma in the 10 days before enrollment date, or self-reported use of systemic corticosteroid for the treatment of asthma in the 10 days before enrollment date. Participants who were screen-failed due to this criterion may be re-screened once the participant is more than 10 days post asthma-related inpatient admission, emergency department or urgent care visit, or systemic corticosteroid use.",
+	"3. Chronic use of oral corticosteroids (for any condition) within 3 months before enrollment date. Chronic use of oral corticosteroids is defined as: daily or every other day use for 14 days or longer.",
+	"4. History of albuterol and budesonide as rescue use within 12 months before enrollment date.",
+	"5. History of any malignancy (except non-melanoma neoplasms of skin) in 12 months before the enrollment date.",
+	"6. For females only - currently pregnant or breastfeeding on enrollment date. Participants are excluded from the study if any of the following criteria apply."
     ],
 }
 

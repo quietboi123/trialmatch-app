@@ -23,7 +23,7 @@ USE_PRESET_CRITERIA = True
 CONTACT_TOKEN = "[CONTACT_INFO_FORM]"  # sentinel the model outputs to trigger the form
 
 PRESET_CRITERIA = {
-    "title": "Combination Short-Acting BroNchodilator and Inhaled Corticosteroid Rescue Therapy on Health Outcomes in Routine Care",
+    "title": "Combination Short-Acting BroNchodilator and Inhaled Corticosteroid Rescue Therapy on Health Outcomes in Routine Care | NCT06422689",
     "inclusion": [
         "1. Adults aged 18 years and above as of enrollment date.",
 	"2. At least 1 visit with primary or secondary diagnosis of asthma on or within 12 months prior to the enrollment date.",
@@ -261,7 +261,7 @@ def scroll_to_bottom():
 # 3) STREAMLIT PAGE
 # =========================
 st.set_page_config(page_title="Check Your Eligibility for Local Asthma Studies", page_icon="🧪")
-st.title("TrialMatch Recruiter")
+st.title("Check Your Eligibility for Local Asthma Studies")
 st.markdown("Quickly pre-screen for a Asthma clinical trials ocurring in the Boston area. We will only contact you if you qualify.")
 
 # Session state

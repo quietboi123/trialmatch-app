@@ -336,11 +336,23 @@ if USE_PRESET_CRITERIA and not st.session_state.bootstrapped:
     st.session_state.bootstrapped = True
 
 # =========================
-# 6) DISPLAY CHAT HISTORY (skip hidden seed)
+# 6) DISPLAY CHAT HISTORY (skip hidden seed + render snapshots nicely)
 # =========================
 for msg in st.session_state.messages:
     if msg.get("hide"):
         continue
+
+    # Special renderer: a read-only snapshot of the submitted contact form
+    if msg.get("type") == "contact_snapshot":
+        with st.chat_message("assistant"):
+            st.markdown("**Submitted contact details**")
+            c = msg.get("contact", {})
+            st.text_input("Email", value=c.get("email", ""), disabled=True)
+            st.text_input("Phone", value=c.get("phone", ""), disabled=True)
+            st.checkbox("I consent to be contacted about this study.", value=bool(c.get("consent")), disabled=True)
+        continue
+
+    # Default: regular markdown bubbles
     st.chat_message(msg["role"]).markdown(msg["content"])
 
 # =========================
@@ -371,19 +383,33 @@ def render_contact_form():
     return None
 
 if st.session_state.awaiting_contact:
-    contact = render_contact_form()
+    # Render the form *inside a chat bubble* so the chat stays autoscrolled to the bottom.
+    with st.chat_message("assistant"):
+        contact = render_contact_form()
+
     if contact:
-        # add a structured user turn with the form info
+        # Feed contact info to the model without showing a "sentence" bubble to the user
         contact_text = (
             "Here is my contact information from the form:\n"
             f"Email: {contact['email']}\n"
             f"Phone: {contact['phone']}\n"
             f"Consent: {'true' if contact['consent'] else 'false'}"
         )
-        st.session_state.messages.append({"role": "user", "content": contact_text})
-        st.chat_message("user").markdown("Submitted contact details ✅")
+        st.session_state.messages.append({
+            "role": "user",
+            "content": contact_text,
+            "hide": True  # <-- keeps it out of the visible chat history
+        })
 
-        # continue: produce final summary + JSON (hidden), then persist (STREAMED)
+        # Keep a read-only snapshot of the filled form inside the chat history
+        st.session_state.messages.append({
+            "role": "assistant",
+            "type": "contact_snapshot",
+            "contact": contact,
+            "content": ""  # not used; UI is rendered by the special-case above
+        })
+
+        # Continue: produce final summary + JSON (hidden), then persist (streamed)
         raw_reply = stream_openai_reply(
             [{"role": "system", "content": system_prompt}] + st.session_state.messages
         )

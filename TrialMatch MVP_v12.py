@@ -23,21 +23,6 @@ st.set_page_config(
     layout="centered",
 )
 
-# ---- App header with logo ----
-st.image("assets/favicon.png", width=60)
-st.markdown(
-    """
-    <div style="font-size:22px; font-weight:700; color:#1E3A8A;">
-        trialmatches
-    </div>
-    <div style="font-size:14px; color:#444;">
-        Check your eligibility for local asthma studies
-    </div>
-    """,
-    unsafe_allow_html=True,
-)
-st.divider()
-
 # =========================
 # 0) CONFIG: PRESET CRITERIA
 # =========================
@@ -556,6 +541,7 @@ else:
 
 # One last nudge to keep the view pinned to the bottom after any action
 scroll_to_bottom()
+
 
 
 

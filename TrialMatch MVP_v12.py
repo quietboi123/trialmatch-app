@@ -14,6 +14,7 @@ import streamlit.components.v1 as components  # <-- for autoscroll
 # from supabase import create_client, Client  # <-- lazy-import inside get_supabase()
 import json
 import re
+import base64
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -24,19 +25,51 @@ st.set_page_config(
     layout="centered",
 )
 
-# --- Custom header with logo ---
-logo_path = Path("assets/TrialMatch_Logo.png")
-if logo_path.exists():
-    col1, col2 = st.columns([1, 8])  # adjust ratio to control spacing
-    with col1:
-        st.image(str(logo_path), use_container_width=True)
-    with col2:
-        st.markdown(
-            "<h1 style='margin-bottom:0;'>Check Your Eligibility for Local Asthma Studies</h1>",
-            unsafe_allow_html=True
-        )
-else:
-    st.title("Check Your Eligibility for Local Asthma Studies")
+# ===== Top-left fixed navbar (drop-in) =====
+
+def _img_b64(p: Path) -> str:
+    with open(p, "rb") as f:
+        return base64.b64encode(f.read()).decode("utf-8")
+
+_logo = Path("assets/TrialMatch_Logo.png")
+logo_b64 = _img_b64(_logo) if _logo.exists() else ""
+
+st.markdown(
+    f"""
+    <style>
+      /* Fixed top bar spanning full page width */
+      .tm-topbar {{
+        position: fixed;
+        top: 0; left: 0; right: 0;
+        width: 100%;
+        display: flex; align-items: center; gap: 12px;
+        padding: 10px 16px;
+        background: white;  /* or your theme color if preferred */
+        box-shadow: 0 1px 6px rgba(0,0,0,.08);
+        z-index: 9999;  /* keep it above Streamlit content */
+      }}
+      .tm-topbar img {{
+        height: 32px;  /* adjust to taste (e.g., 40px) */
+      }}
+      .tm-topbar .tm-title {{
+        font-weight: 700;
+        font-size: 24px; /* ~text-3xl look */
+        line-height: 1.2;
+        margin: 0;
+      }}
+    </style>
+
+    <div class="tm-topbar">
+      {'<img src="data:image/png;base64,' + logo_b64 + '" alt="trialmatches logo"/>' if logo_b64 else ''}
+      <div class="tm-title">Check Your Eligibility for Local Asthma Studies</div>
+    </div>
+    """,
+    unsafe_allow_html=True,
+)
+
+# Spacer so the app content doesn't hide under the fixed bar
+st.markdown("<div style='height:64px'></div>", unsafe_allow_html=True)
+# ===== End top-left fixed navbar =====
 
 
 # =========================
@@ -557,6 +590,7 @@ else:
 
 # One last nudge to keep the view pinned to the bottom after any action
 scroll_to_bottom()
+
 
 
 

@@ -26,8 +26,6 @@ st.set_page_config(
 )
 
 # ===== Top-left site header logo (safe drop-in) =====
-import base64
-from pathlib import Path
 
 # 1) Preferred: Streamlit native header logo (available on recent versions)
 try:
@@ -599,6 +597,7 @@ else:
 
 # One last nudge to keep the view pinned to the bottom after any action
 scroll_to_bottom()
+
 
 
 

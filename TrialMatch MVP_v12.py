@@ -31,7 +31,7 @@ st.set_page_config(
 try:
     # Places the logo in the app’s header at the top-left (outside the centered page column).
     # If you want the logo to link to your home page, set link="https://trialmatch-app.onrender.com"
-    st.logo("assets/TrialMatch_Logo.png", size="80")
+    st.logo("assets/TrialMatch_Logo.png")
     # Add a little breathing room below the header so content isn’t cramped
     st.markdown("<div style='height:12px'></div>", unsafe_allow_html=True)
 
@@ -597,6 +597,7 @@ else:
 
 # One last nudge to keep the view pinned to the bottom after any action
 scroll_to_bottom()
+
 
 
 

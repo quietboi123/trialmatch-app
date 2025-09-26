@@ -267,8 +267,32 @@ def scroll_to_bottom():
 # =========================
 # 3) STREAMLIT PAGE
 # =========================
-st.title("Check Your Eligibility for Local Asthma Studies")
-st.markdown("Quickly pre-screen for a Asthma clinical trials ocurring in the Boston area. We will only contact you if you qualify.")
+# ---- Branded header with logo (safe for all Streamlit versions) ----
+def render_header():
+    col1, col2 = st.columns([1, 5])
+    with col1:
+        try:
+            st.image("assets/TrialMatch_Logo.png", width=56)  # won’t crash if missing
+        except Exception:
+            pass
+    with col2:
+        st.markdown(
+            (
+                "<div style='line-height:1.2;'>"
+                "<div style='font-size:22px; font-weight:700; color:#1E3A8A;'>trialmatches</div>"
+                "<div style='font-size:14px; color:#444;'>Check your eligibility for local asthma studies</div>"
+                "</div>"
+            ),
+            unsafe_allow_html=True,
+        )
+    # simple horizontal rule to separate header from chat
+    st.markdown(
+        "<hr style='margin:10px 0 16px; border:none; border-top:1px solid #e5e7eb;'>",
+        unsafe_allow_html=True
+    )
+
+render_header()
+
 
 # Session state
 if "messages" not in st.session_state:
@@ -541,6 +565,7 @@ else:
 
 # One last nudge to keep the view pinned to the bottom after any action
 scroll_to_bottom()
+
 
 
 

@@ -25,7 +25,7 @@ st.set_page_config(
     layout="centered",
 )
 
-# ===== Top-left site header logo (hide Streamlit header + custom navbar) =====
+# ===== Top-left site header logo + motto =====
 
 LOGO_PATH = Path("assets/TrialMatch_Logo.png")
 
@@ -38,53 +38,46 @@ logo_b64 = _img_b64(LOGO_PATH) if LOGO_PATH.exists() else ""
 st.markdown(
     f"""
     <style>
-      /* 1) Hide Streamlit's built-in header (menu/share bar) so it can't overlap/crop */
       [data-testid="stHeader"] {{
-        display: none;
+        display: none;  /* hide Streamlit's default header */
       }}
 
-      /* 2) Reserve room at the top for our own fixed header */
-      :root {{ --tm-header-h: 96px; }}  /* adjust to taste */
+      :root {{ --tm-header-h: 100px; }}  /* increase header space */
       .block-container {{
-        padding-top: calc(var(--tm-header-h) + 16px) !important;
+        padding-top: calc(var(--tm-header-h) + 20px) !important;
       }}
       [data-testid="stAppViewContainer"] .main {{
-        padding-top: calc(var(--tm-header-h) + 16px) !important;
+        padding-top: calc(var(--tm-header-h) + 20px) !important;
       }}
 
-      /* 3) Our fixed, full-width navbar pinned to the viewport */
       #tm-topbar {{
         position: fixed; top: 0; left: 0; right: 0; height: var(--tm-header-h);
-        display: flex; align-items: center; gap: 16px;
-        padding: 12px 20px;
+        display: flex; align-items: center; gap: 20px;
+        padding: 12px 24px;
         background: white;
         box-shadow: 0 1px 6px rgba(0,0,0,.08);
-        z-index: 100000; /* keep above all Streamlit chrome */
+        z-index: 100000;
       }}
       #tm-topbar img {{
-        height: 84px;           /* logo size — make bigger/smaller here */
+        height: 90px;   /* make logo larger */
       }}
       #tm-topbar .tm-title {{
-        font-weight: 700;
-        font-size: 26px;
-        line-height: 1.2;
+        font-weight: 500;
+        font-size: 20px;
+        color: #1E3A8A;  /* dark blue to match your theme */
         margin: 0;
-      }}
-
-      /* Optional: tighten page width a bit on very wide screens */
-      .block-container {{
-        max-width: 1000px;
       }}
     </style>
 
     <div id="tm-topbar">
       {"<img src='data:image/png;base64," + logo_b64 + "' alt='trialmatches logo'/>" if logo_b64 else ""}
-      <div class="tm-title">Check Your Eligibility for Local Asthma Studies</div>
+      <div class="tm-title">Helping Patients Access Groundbreaking New Therapies</div>
     </div>
     """,
     unsafe_allow_html=True,
 )
-# ===== End top-left site header logo =====
+# ===== End top-left site header logo + motto =====
+
 
 
 
@@ -608,6 +601,7 @@ else:
 
 # One last nudge to keep the view pinned to the bottom after any action
 scroll_to_bottom()
+
 
 
 

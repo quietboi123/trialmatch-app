@@ -16,6 +16,13 @@ import json
 import re
 from datetime import datetime, timezone
 
+# ---- Page config (must be first Streamlit call) ----
+st.set_page_config(
+    page_title="trialmatches — Asthma Study Pre-Screen",
+    page_icon="assets/favicon.png",  # place a small 32x32 or 64x64 PNG here
+    layout="centered",
+)
+
 # =========================
 # 0) CONFIG: PRESET CRITERIA
 # =========================
@@ -260,7 +267,6 @@ def scroll_to_bottom():
 # =========================
 # 3) STREAMLIT PAGE
 # =========================
-st.set_page_config(page_title="Check Your Eligibility for Local Asthma Studies", page_icon="🧪")
 st.title("Check Your Eligibility for Local Asthma Studies")
 st.markdown("Quickly pre-screen for a Asthma clinical trials ocurring in the Boston area. We will only contact you if you qualify.")
 
@@ -535,3 +541,4 @@ else:
 
 # One last nudge to keep the view pinned to the bottom after any action
 scroll_to_bottom()
+

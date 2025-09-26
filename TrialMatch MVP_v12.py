@@ -23,6 +23,42 @@ st.set_page_config(
     layout="centered",
 )
 
+# ---- Fixed masthead with top-left logo (keeps your existing header untouched) ----
+st.markdown(
+    """
+    <style>
+      /* Fixed top bar */
+      .tm-masthead {
+        position: fixed; top: 0; left: 0; right: 0;
+        height: 56px; display: flex; align-items: center;
+        padding: 8px 16px;
+        background: rgba(255,255,255,0.95);
+        backdrop-filter: blur(6px);
+        border-bottom: 1px solid #eee;
+        z-index: 1000;
+      }
+      .tm-logo-wrap { display:inline-flex; align-items:center; gap:8px; }
+      .tm-logo-img { height: 32px; width: 32px; object-fit: contain; }
+      .tm-logo-text { font-weight: 700; font-size: 16px; color: #1E3A8A; }
+
+      /* Push the main content down so it doesn't hide behind the fixed bar */
+      .block-container { padding-top: 72px; }
+      @media (max-width: 600px) {
+        .block-container { padding-top: 64px; }
+      }
+    </style>
+
+    <div class="tm-masthead">
+      <div class="tm-logo-wrap">
+        <img class="tm-logo-img" src="assets/TrialMatch_Logo.png" alt="trialmatches logo"/>
+        <span class="tm-logo-text">trialmatches</span>
+      </div>
+    </div>
+    """,
+    unsafe_allow_html=True,
+)
+
+
 # =========================
 # 0) CONFIG: PRESET CRITERIA
 # =========================
@@ -267,32 +303,8 @@ def scroll_to_bottom():
 # =========================
 # 3) STREAMLIT PAGE
 # =========================
-# ---- Branded header with logo (safe for all Streamlit versions) ----
-def render_header():
-    col1, col2 = st.columns([1, 5])
-    with col1:
-        try:
-            st.image("assets/TrialMatch_Logo.png", width=56)  # won’t crash if missing
-        except Exception:
-            pass
-    with col2:
-        st.markdown(
-            (
-                "<div style='line-height:1.2;'>"
-                "<div style='font-size:22px; font-weight:700; color:#1E3A8A;'>trialmatches</div>"
-                "<div style='font-size:14px; color:#444;'>Check your eligibility for local asthma studies</div>"
-                "</div>"
-            ),
-            unsafe_allow_html=True,
-        )
-    # simple horizontal rule to separate header from chat
-    st.markdown(
-        "<hr style='margin:10px 0 16px; border:none; border-top:1px solid #e5e7eb;'>",
-        unsafe_allow_html=True
-    )
-
-render_header()
-
+st.title("Check Your Eligibility for Local Asthma Studies")
+st.markdown("Quickly pre-screen for a Asthma clinical trials ocurring in the Boston area. We will only contact you if you qualify.")
 
 # Session state
 if "messages" not in st.session_state:

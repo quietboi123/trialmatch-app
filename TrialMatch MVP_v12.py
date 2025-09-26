@@ -19,7 +19,7 @@ from datetime import datetime, timezone
 # ---- Page config (must be first Streamlit call) ----
 st.set_page_config(
     page_title="trialmatches — Asthma Study Pre-Screen",
-    page_icon="assets/favicon.png",  # place a small 32x32 or 64x64 PNG here
+    page_icon="assets/TrialMatch_Logo.png",  # place a small 32x32 or 64x64 PNG here
     layout="centered",
 )
 
@@ -541,4 +541,5 @@ else:
 
 # One last nudge to keep the view pinned to the bottom after any action
 scroll_to_bottom()
+
 

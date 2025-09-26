@@ -25,41 +25,59 @@ st.set_page_config(
     layout="centered",
 )
 
-# ===== Top-left site header logo (safe drop-in) =====
-import base64
+# ===== Top-left site header logo (robust) =====
+import base64, os
 from pathlib import Path
 
 LOGO_PATH = Path("assets/TrialMatch_Logo.png")
 
+# (Temporary) debug so you can see what the runtime sees — remove after verifying
+st.caption(f"logo path: {LOGO_PATH} | exists: {LOGO_PATH.exists()} | cwd: {os.getcwd()}")
+
+def _img_b64(p: Path) -> str:
+    with open(p, "rb") as f:
+        return base64.b64encode(f.read()).decode("utf-8")
+
 try:
-    # ✅ size must be an int, not a string
-    st.logo(str(LOGO_PATH), size=80)
-    st.markdown("<div style='height:16px'></div>", unsafe_allow_html=True)
+    # Newer Streamlit: renders in the true top-left app header.
+    # IMPORTANT: size must be an int (pixels), not a string.
+    st.logo(str(LOGO_PATH), size=96)
+    st.markdown("<div style='height:12px'></div>", unsafe_allow_html=True)
 
 except Exception:
-    # Robust fallback using an <img> tag (simpler than background-image)
-    def _img_b64(p: Path) -> str:
-        with open(p, "rb") as f:
-            return base64.b64encode(f.read()).decode("utf-8")
-
+    # Fallback: fixed top bar with a normal <img>. Works regardless of Streamlit version.
     logo_b64 = _img_b64(LOGO_PATH) if LOGO_PATH.exists() else ""
+
+    # If the image wasn't found, surface a visible hint (remove after verifying)
+    if not logo_b64:
+        st.warning("Logo not found at assets/TrialMatch_Logo.png — check filename/casing in repo.")
 
     st.markdown(
         f"""
         <style>
-          /* Give room under fixed bar */
-          .block-container {{ padding-top: 96px; }}
-          .tm-topbar {{
-            position: fixed; top: 0; left: 0; right: 0; height: 80px;
+          :root {{ --tm-header-h: 96px; }}
+          /* Push the main content down so it doesn't sit under the fixed bar (cover new/old Streamlit DOMs) */
+          .block-container {{ padding-top: calc(var(--tm-header-h) + 12px) !important; }}
+          [data-testid="stAppViewContainer"] .main {{ padding-top: calc(var(--tm-header-h) + 12px) !important; }}
+
+          /* Full-width fixed bar pinned to viewport */
+          #tm-topbar {{
+            position: fixed; top: 0; left: 0; right: 0; height: var(--tm-header-h);
             display: flex; align-items: center; gap: 16px;
             padding: 12px 20px; background: white;
-            box-shadow: 0 1px 6px rgba(0,0,0,.08); z-index: 9999;
+            box-shadow: 0 1px 6px rgba(0,0,0,.08);
+            z-index: 100000; /* keep above all Streamlit chrome */
           }}
-          .tm-title {{ font-weight: 700; font-size: 24px; line-height: 1.2; margin: 0; }}
+          #tm-topbar .tm-title {{
+            font-weight: 700; font-size: 26px; line-height: 1.2; margin: 0;
+          }}
+          #tm-topbar img {{
+            height: 84px; /* visible + crisp; tweak as desired */
+          }}
         </style>
 
-        <div class="tm-topbar">
-          {"<img src='data:image/png;base64," + logo_b64 + "' alt='trialmatches logo' style='height:80px;'/>" if logo_b64 else ""}
+        <div id="tm-topbar">
+          {"<img src='data:image/png;base64," + logo_b64 + "' alt='trialmatches logo'/>" if logo_b64 else ""}
           <div class="tm-title">Check Your Eligibility for Local Asthma Studies</div>
         </div>
         """,
@@ -588,6 +606,7 @@ else:
 
 # One last nudge to keep the view pinned to the bottom after any action
 scroll_to_bottom()
+
 
 
 

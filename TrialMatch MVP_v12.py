@@ -15,6 +15,7 @@ import streamlit.components.v1 as components  # <-- for autoscroll
 import json
 import re
 from datetime import datetime, timezone
+from pathlib import Path
 
 # ---- Page config (must be first Streamlit call) ----
 st.set_page_config(
@@ -23,40 +24,19 @@ st.set_page_config(
     layout="centered",
 )
 
-# ---- Fixed masthead with top-left logo (keeps your existing header untouched) ----
-st.markdown(
-    """
-    <style>
-      /* Fixed top bar */
-      .tm-masthead {
-        position: fixed; top: 0; left: 0; right: 0;
-        height: 56px; display: flex; align-items: center;
-        padding: 8px 16px;
-        background: rgba(255,255,255,0.95);
-        backdrop-filter: blur(6px);
-        border-bottom: 1px solid #eee;
-        z-index: 1000;
-      }
-      .tm-logo-wrap { display:inline-flex; align-items:center; gap:8px; }
-      .tm-logo-img { height: 32px; width: 32px; object-fit: contain; }
-      .tm-logo-text { font-weight: 700; font-size: 16px; color: #1E3A8A; }
-
-      /* Push the main content down so it doesn't hide behind the fixed bar */
-      .block-container { padding-top: 72px; }
-      @media (max-width: 600px) {
-        .block-container { padding-top: 64px; }
-      }
-    </style>
-
-    <div class="tm-masthead">
-      <div class="tm-logo-wrap">
-        <img class="tm-logo-img" src="assets/TrialMatch_Logo.png" alt="trialmatches logo"/>
-        <span class="tm-logo-text">trialmatches</span>
-      </div>
-    </div>
-    """,
-    unsafe_allow_html=True,
-)
+# --- Custom header with logo ---
+logo_path = Path("assets/TrialMatch_Logo.png")
+if logo_path.exists():
+    col1, col2 = st.columns([1, 8])  # adjust ratio to control spacing
+    with col1:
+        st.image(str(logo_path), use_container_width=True)
+    with col2:
+        st.markdown(
+            "<h1 style='margin-bottom:0;'>Check Your Eligibility for Local Asthma Studies</h1>",
+            unsafe_allow_html=True
+        )
+else:
+    st.title("Check Your Eligibility for Local Asthma Studies")
 
 
 # =========================
@@ -577,6 +557,7 @@ else:
 
 # One last nudge to keep the view pinned to the bottom after any action
 scroll_to_bottom()
+
 
 
 

@@ -25,6 +25,63 @@ st.set_page_config(
     layout="centered",
 )
 
+# ===== Top-left site header logo (safe drop-in) =====
+import base64
+from pathlib import Path
+
+# 1) Preferred: Streamlit native header logo (available on recent versions)
+try:
+    # Places the logo in the app’s header at the top-left (outside the centered page column).
+    # If you want the logo to link to your home page, set link="https://trialmatch-app.onrender.com"
+    st.logo("assets/TrialMatch_Logo.png")
+    # Add a little breathing room below the header so content isn’t cramped
+    st.markdown("<div style='height:12px'></div>", unsafe_allow_html=True)
+
+except Exception:
+    # 2) Fallback: CSS-based fixed top bar that spans the full page width
+    def _img_b64(p: Path) -> str:
+        with open(p, "rb") as f:
+            return base64.b64encode(f.read()).decode("utf-8")
+
+    _logo = Path("assets/TrialMatch_Logo.png")
+    logo_b64 = _img_b64(_logo) if _logo.exists() else ""
+
+    st.markdown(
+        f"""
+        <style>
+          /* Reserve space under the fixed bar so content doesn’t hide behind it */
+          .block-container {{ padding-top: 72px; }}
+
+          /* Full-width fixed bar pinned to the viewport, not the centered column */
+          .tm-topbar {{
+            position: fixed; top: 0; left: 0; right: 0; height: 56px;
+            display: flex; align-items: center; gap: 12px;
+            padding: 8px 16px;
+            background: white;
+            box-shadow: 0 1px 6px rgba(0,0,0,.08);
+            z-index: 9999;
+          }}
+          .tm-topbar .tm-logo {{
+            width: 36px; height: 36px;
+            background-image: url('data:image/png;base64,{logo_b64}');
+            background-size: contain; background-position: center left; background-repeat: no-repeat;
+          }}
+          .tm-topbar .tm-title {{
+            font-weight: 700; font-size: 22px; line-height: 1; margin: 0;
+          }}
+        </style>
+
+        <div class="tm-topbar">
+          <div class="tm-logo"></div>
+          <div class="tm-title">Check Your Eligibility for Local Asthma Studies</div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+# ===== End top-left site header logo =====
+
+
+
 # ===== Top-left fixed navbar (drop-in) =====
 
 def _img_b64(p: Path) -> str:
@@ -590,6 +647,7 @@ else:
 
 # One last nudge to keep the view pinned to the bottom after any action
 scroll_to_bottom()
+
 
 
 

@@ -1,0 +1,9 @@
+[theme]
+primaryColor = "#1E3A8A"        # dark blue for header text, buttons, highlights
+backgroundColor = "#FFFFFF"     # white background
+secondaryBackgroundColor = "#F9FAFB"  # very light gray for sidebars / contrast
+textColor = "#000000"           # plain black text
+font = "sans serif"
+
+[browser]
+gatherUsageStats = false

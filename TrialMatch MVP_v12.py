@@ -26,57 +26,47 @@ st.set_page_config(
 )
 
 # ===== Top-left site header logo (safe drop-in) =====
+import base64
+from pathlib import Path
 
-# 1) Preferred: Streamlit native header logo (available on recent versions)
+LOGO_PATH = Path("assets/TrialMatch_Logo.png")
+
 try:
-    # Places the logo in the app’s header at the top-left (outside the centered page column).
-    # You can control the size with the `size` parameter (in pixels).
-    st.logo("assets/TrialMatch_Logo.png", size=80)
-    # Add a little breathing room below the header so content isn’t cramped
+    # ✅ size must be an int, not a string
+    st.logo(str(LOGO_PATH), size=80)
     st.markdown("<div style='height:16px'></div>", unsafe_allow_html=True)
 
 except Exception:
-    # 2) Fallback: CSS-based fixed top bar that spans the full page width
+    # Robust fallback using an <img> tag (simpler than background-image)
     def _img_b64(p: Path) -> str:
         with open(p, "rb") as f:
             return base64.b64encode(f.read()).decode("utf-8")
 
-    _logo = Path("assets/TrialMatch_Logo.png")
-    logo_b64 = _img_b64(_logo) if _logo.exists() else ""
+    logo_b64 = _img_b64(LOGO_PATH) if LOGO_PATH.exists() else ""
 
     st.markdown(
         f"""
         <style>
-          /* Reserve space under the fixed bar so content doesn’t hide behind it */
+          /* Give room under fixed bar */
           .block-container {{ padding-top: 96px; }}
-
-          /* Full-width fixed bar pinned to the viewport, not the centered column */
           .tm-topbar {{
             position: fixed; top: 0; left: 0; right: 0; height: 80px;
             display: flex; align-items: center; gap: 16px;
-            padding: 12px 20px;
-            background: white;
-            box-shadow: 0 1px 6px rgba(0,0,0,.08);
-            z-index: 9999;
+            padding: 12px 20px; background: white;
+            box-shadow: 0 1px 6px rgba(0,0,0,.08); z-index: 9999;
           }}
-          .tm-topbar .tm-logo {{
-            width: 80px; height: 80px;
-            background-image: url('data:image/png;base64,{logo_b64}');
-            background-size: contain; background-position: center left; background-repeat: no-repeat;
-          }}
-          .tm-topbar .tm-title {{
-            font-weight: 700; font-size: 24px; line-height: 1.2; margin: 0;
-          }}
+          .tm-title {{ font-weight: 700; font-size: 24px; line-height: 1.2; margin: 0; }}
         </style>
 
         <div class="tm-topbar">
-          <div class="tm-logo"></div>
+          {"<img src='data:image/png;base64," + logo_b64 + "' alt='trialmatches logo' style='height:80px;'/>" if logo_b64 else ""}
           <div class="tm-title">Check Your Eligibility for Local Asthma Studies</div>
         </div>
         """,
         unsafe_allow_html=True,
     )
 # ===== End top-left site header logo =====
+
 
 
 
@@ -598,6 +588,7 @@ else:
 
 # One last nudge to keep the view pinned to the bottom after any action
 scroll_to_bottom()
+
 
 
 

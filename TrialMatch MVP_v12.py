@@ -323,8 +323,8 @@ def scroll_to_bottom():
 # =========================
 # 3) STREAMLIT PAGE
 # =========================
-# st.title("Check Your Eligibility for Local Asthma Studies")
-# st.markdown("Quickly pre-screen for a Asthma clinical trials ocurring in the Boston area. We will only contact you if you qualify.")
+st.title("Check Your Eligibility for Local Asthma Studies")
+st.markdown("Quickly pre-screen for a Asthma clinical trials ocurring in the Boston area. We will only contact you if you qualify.")
 
 # Session state
 if "messages" not in st.session_state:
@@ -597,6 +597,7 @@ else:
 
 # One last nudge to keep the view pinned to the bottom after any action
 scroll_to_bottom()
+
 
 
 

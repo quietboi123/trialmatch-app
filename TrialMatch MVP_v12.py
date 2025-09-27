@@ -108,6 +108,7 @@ st.markdown(
 
 
 
+
 # ===== End top-left site header logo + motto =====
 
 
@@ -633,6 +634,7 @@ else:
 
 # One last nudge to keep the view pinned to the bottom after any action
 scroll_to_bottom()
+
 
 
 

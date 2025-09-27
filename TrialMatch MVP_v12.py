@@ -52,33 +52,52 @@ st.markdown(
         padding-top: calc(var(--tm-header-h) + 20px) !important;
       }}
 
-      /* LIGHT GRAY EVERYWHERE (except your white top bar) */
+      /* -------------------------------------------------------
+         1) UNIVERSAL LIGHT-GRAY BACKGROUND (behind everything)
+         ------------------------------------------------------- */
+      body::before {{
+        content: "";
+        position: fixed;
+        inset: 0;
+        background: #f7f7f7;   /* very light gray */
+        z-index: -1;           /* sit behind the entire app */
+      }}
+
+      /* Make all Streamlit shells transparent so the overlay shows */
       html, body,
       [data-testid="stApp"],
       [data-testid="stAppViewContainer"],
-      [data-testid="stMain"] {{
-        background: #f7f7f7 !important;
-      }}
-
-      /* Some Streamlit builds paint an extra white layer at the bottom.
-         Nuke any white backgrounds in immediate children of the app container. */
-      [data-testid="stAppViewContainer"] > div {{
+      [data-testid="stMain"],
+      .block-container,
+      [data-testid="stAppViewContainer"] .main {{
         background: transparent !important;
       }}
 
-      /* Keep the chat input area WHITE (the pill + its container) */
-      [data-testid="stChatInput"] {{
-        background: white !important;
+      /* Some builds render extra wrappers/footers — keep them transparent too */
+      [data-testid="stBottomBlockContainer"],
+      footer,
+      [data-testid="stStatusWidget"] {{
+        background: transparent !important;
+      }}
+
+      /* -------------------------------------------------------
+         2) KEEP THE CHAT INPUT AREA WHITE
+         ------------------------------------------------------- */
+      /* Match stChatInput even if the testid changes suffix */
+      [data-testid^="stChatInput"] {{
+        background: #ffffff !important;
         border-radius: 9999px !important;
         box-shadow: 0 1px 6px rgba(0,0,0,.06) !important;
         padding: 8px 12px !important;
       }}
-      /* The inner input wrapper can carry its own bg — force white too */
-      [data-testid="stChatInput"] > div {{
-        background: white !important;
+      /* Ensure inner wrappers don’t reintroduce gray */
+      [data-testid^="stChatInput"] * {{
+        background: transparent !important;
       }}
 
-      /* Your fixed white top bar */
+      /* -------------------------------------------------------
+         3) Your fixed white top bar (unchanged)
+         ------------------------------------------------------- */
       #tm-topbar {{
         position: fixed; top: 0; left: 0; right: 0; height: var(--tm-header-h);
         display: flex; align-items: center; gap: 20px;
@@ -87,9 +106,7 @@ st.markdown(
         box-shadow: 0 1px 6px rgba(0,0,0,.08);
         z-index: 100000;
       }}
-      #tm-topbar img {{
-        height: 90px;
-      }}
+      #tm-topbar img {{ height: 90px; }}
       #tm-topbar .tm-title {{
         font-weight: 500;
         font-size: 20px;
@@ -105,6 +122,7 @@ st.markdown(
     """,
     unsafe_allow_html=True,
 )
+
 
 
 
@@ -634,6 +652,7 @@ else:
 
 # One last nudge to keep the view pinned to the bottom after any action
 scroll_to_bottom()
+
 
 
 

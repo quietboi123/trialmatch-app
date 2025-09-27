@@ -50,6 +50,11 @@ st.markdown(
         padding-top: calc(var(--tm-header-h) + 20px) !important;
       }}
 
+      /* Set the whole app background to very light gray */
+      [data-testid="stAppViewContainer"] {{
+        background-color: #f7f7f7;
+      }}
+
       #tm-topbar {{
         position: fixed; top: 0; left: 0; right: 0; height: var(--tm-header-h);
         display: flex; align-items: center; gap: 20px;
@@ -76,6 +81,7 @@ st.markdown(
     """,
     unsafe_allow_html=True,
 )
+
 # ===== End top-left site header logo + motto =====
 
 
@@ -601,6 +607,7 @@ else:
 
 # One last nudge to keep the view pinned to the bottom after any action
 scroll_to_bottom()
+
 
 
 

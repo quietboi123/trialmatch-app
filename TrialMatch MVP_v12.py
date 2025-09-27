@@ -52,61 +52,47 @@ st.markdown(
         padding-top: calc(var(--tm-header-h) + 20px) !important;
       }}
 
-      /* -------------------------------------------------------
-         1) UNIVERSAL LIGHT-GRAY BACKGROUND (behind everything)
-         ------------------------------------------------------- */
+      /* Universal light-gray backdrop (theme already sets gray; keep for safety) */
       body::before {{
         content: "";
         position: fixed;
         inset: 0;
-        background: #f7f7f7;   /* very light gray */
-        z-index: -1;           /* sit behind the entire app */
+        background: #f7f7f7;
+        z-index: -1;
       }}
-
-      /* Make all Streamlit shells transparent so the overlay shows */
       html, body,
       [data-testid="stApp"],
       [data-testid="stAppViewContainer"],
       [data-testid="stMain"],
       .block-container,
-      [data-testid="stAppViewContainer"] .main {{
-        background: transparent !important;
-      }}
-
-      /* Some builds render extra wrappers/footers — keep them transparent too */
+      [data-testid="stAppViewContainer"] .main,
       [data-testid="stBottomBlockContainer"],
       footer,
       [data-testid="stStatusWidget"] {{
         background: transparent !important;
       }}
 
-      /* -------------------------------------------------------
-         2) KEEP THE CHAT INPUT AREA WHITE
-         ------------------------------------------------------- */
-      /* Match stChatInput even if the testid changes suffix */
+      /* Chat input stays white */
       [data-testid^="stChatInput"] {{
         background: #ffffff !important;
         border-radius: 9999px !important;
         box-shadow: 0 1px 6px rgba(0,0,0,.06) !important;
         padding: 8px 12px !important;
       }}
-      /* Ensure inner wrappers don’t reintroduce gray */
-      [data-testid^="stChatInput"] * {{
-        background: transparent !important;
-      }}
+      [data-testid^="stChatInput"] * {{ background: transparent !important; }}
 
-      /* -------------------------------------------------------
-         3) FONT OVERRIDE FOR MAIN HEADER
-         ------------------------------------------------------- */
+      /* MAIN HEADER FONT (ChatGPT-style system UI font) */
       h1 {{
         font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
                      Helvetica, Arial, sans-serif !important;
         font-weight: 600;
       }}
 
-      /* -------------------------------------------------------
-         4) Your fixed white top bar (unchanged)
-         ------------------------------------------------------- */
+      /* Smooth scroll + offset so anchors are visible below fixed top bar */
+      html {{ scroll-behavior: smooth; }}
+      [id] {{ scroll-margin-top: calc(var(--tm-header-h) + 24px); }}
+
+      /* ======= TOP BAR ======= */
       #tm-topbar {{
         position: fixed; top: 0; left: 0; right: 0; height: var(--tm-header-h);
         display: flex; align-items: center; gap: 20px;
@@ -116,21 +102,68 @@ st.markdown(
         z-index: 100000;
       }}
       #tm-topbar img {{ height: 90px; }}
+
+      /* Motto (left of nav) */
       #tm-topbar .tm-title {{
         font-weight: 500;
         font-size: 20px;
         color: #1E3A8A;
         margin: 0;
       }}
+
+      /* Nav (right side) */
+      #tm-topbar .tm-nav {{
+        margin-left: auto;                /* push nav to the right */
+        display: flex; align-items: center;
+        gap: 10px;
+      }}
+      #tm-topbar .tm-link {{
+        appearance: none;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 6px 12px;
+        border: 1px solid #E5E7EB;        /* light gray border */
+        border-radius: 9999px;            /* pill */
+        background: #FFFFFF;
+        color: #111827;
+        font-size: 14px;
+        text-decoration: none;
+        line-height: 1;
+        transition: background .15s ease, box-shadow .15s ease, border-color .15s ease;
+      }}
+      #tm-topbar .tm-link:hover {{
+        background: #F3F4F6;
+        border-color: #D1D5DB;
+      }}
+      #tm-topbar .tm-link:focus-visible {{
+        outline: none;
+        box-shadow: 0 0 0 3px rgba(30,58,138,.25);  /* accessible focus ring */
+      }}
+
+      /* Small screens: tighten spacing */
+      @media (max-width: 640px) {{
+        #tm-topbar {{ gap: 12px; padding: 10px 16px; }}
+        #tm-topbar img {{ height: 70px; }}
+        #tm-topbar .tm-title {{ font-size: 16px; }}
+        #tm-topbar .tm-link {{ padding: 6px 10px; font-size: 13px; }}
+      }}
     </style>
 
     <div id="tm-topbar">
       {"<img src='data:image/png;base64," + logo_b64 + "' alt='trialmatches logo'/>" if logo_b64 else ""}
       <div class="tm-title">Helping Patients Access Groundbreaking New Therapies</div>
+
+      <!-- NEW: right-aligned nav -->
+      <nav class="tm-nav" aria-label="Top links">
+        <a class="tm-link" href="#legal" aria-label="Read legal information">Legal</a>
+        <a class="tm-link" href="#privacy" aria-label="Read privacy policy">Privacy</a>
+      </nav>
     </div>
     """,
     unsafe_allow_html=True,
 )
+
 
 
 
@@ -662,6 +695,7 @@ else:
 
 # One last nudge to keep the view pinned to the bottom after any action
 scroll_to_bottom()
+
 
 
 

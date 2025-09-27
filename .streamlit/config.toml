@@ -1,8 +1,8 @@
 [theme]
-primaryColor = "#1E3A8A"        # dark blue for header text, buttons, highlights
-backgroundColor = "#FFFFFF"     # white background
-secondaryBackgroundColor = "#F9FAFB"  # very light gray for sidebars / contrast
-textColor = "#000000"           # plain black text
+primaryColor = "#1E3A8A"             # dark blue for header text, buttons, highlights
+backgroundColor = "#F7F7F7"          # light gray for the entire page background
+secondaryBackgroundColor = "#FFFFFF" # white for chat input, cards, and side elements
+textColor = "#000000"                # plain black text
 font = "sans serif"
 
 [browser]

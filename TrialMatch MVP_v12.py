@@ -52,7 +52,7 @@ st.markdown(
         padding-top: calc(var(--tm-header-h) + 20px) !important;
       }}
 
-      /* Universal light-gray backdrop (theme already sets gray; keep for safety) */
+      /* Universal light-gray backdrop */
       body::before {{
         content: "";
         position: fixed;
@@ -109,36 +109,26 @@ st.markdown(
         font-size: 20px;
         color: #1E3A8A;
         margin: 0;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+                     Helvetica, Arial, sans-serif !important;
       }}
 
       /* Nav (right side) */
       #tm-topbar .tm-nav {{
-        margin-left: auto;                /* push nav to the right */
+        margin-left: auto;
         display: flex; align-items: center;
-        gap: 10px;
+        gap: 24px;
       }}
-      #tm-topbar .tm-link {{
-        appearance: none;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        padding: 6px 12px;
-        border: 1px solid #E5E7EB;        /* light gray border */
-        border-radius: 9999px;            /* pill */
-        background: #FFFFFF;
-        color: #111827;
-        font-size: 14px;
+      #tm-topbar .tm-nav a {{
+        font-weight: 500;
+        font-size: 20px;
+        color: #1E3A8A;
         text-decoration: none;
-        line-height: 1;
-        transition: background .15s ease, box-shadow .15s ease, border-color .15s ease;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+                     Helvetica, Arial, sans-serif !important;
       }}
-      #tm-topbar .tm-link:hover {{
-        background: #F3F4F6;
-        border-color: #D1D5DB;
-      }}
-      #tm-topbar .tm-link:focus-visible {{
-        outline: none;
-        box-shadow: 0 0 0 3px rgba(30,58,138,.25);  /* accessible focus ring */
+      #tm-topbar .tm-nav a:hover {{
+        text-decoration: underline;
       }}
 
       /* Small screens: tighten spacing */
@@ -146,7 +136,7 @@ st.markdown(
         #tm-topbar {{ gap: 12px; padding: 10px 16px; }}
         #tm-topbar img {{ height: 70px; }}
         #tm-topbar .tm-title {{ font-size: 16px; }}
-        #tm-topbar .tm-link {{ padding: 6px 10px; font-size: 13px; }}
+        #tm-topbar .tm-nav a {{ font-size: 16px; }}
       }}
     </style>
 
@@ -156,13 +146,14 @@ st.markdown(
 
       <!-- NEW: right-aligned nav -->
       <nav class="tm-nav" aria-label="Top links">
-        <a class="tm-link" href="#legal" aria-label="Read legal information">Legal</a>
-        <a class="tm-link" href="#privacy" aria-label="Read privacy policy">Privacy</a>
+        <a href="#legal" aria-label="Read legal information">Legal</a>
+        <a href="#privacy" aria-label="Read privacy policy">Privacy</a>
       </nav>
     </div>
     """,
     unsafe_allow_html=True,
 )
+
 
 
 
@@ -695,6 +686,7 @@ else:
 
 # One last nudge to keep the view pinned to the bottom after any action
 scroll_to_bottom()
+
 
 
 

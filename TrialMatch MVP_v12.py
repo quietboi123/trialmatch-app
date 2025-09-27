@@ -50,9 +50,15 @@ st.markdown(
         padding-top: calc(var(--tm-header-h) + 20px) !important;
       }}
 
-      /* Set the whole app background to very light gray */
-      [data-testid="stAppViewContainer"] {{
+      /* Extend light gray background to entire app */
+      [data-testid="stAppViewContainer"],
+      [data-testid="stMain"] {{
         background-color: #f7f7f7;
+      }}
+
+      /* Keep the chat input bar white */
+      [data-testid="stChatInput"] {{
+        background-color: white;
       }}
 
       #tm-topbar {{
@@ -81,6 +87,7 @@ st.markdown(
     """,
     unsafe_allow_html=True,
 )
+
 
 # ===== End top-left site header logo + motto =====
 
@@ -607,6 +614,7 @@ else:
 
 # One last nudge to keep the view pinned to the bottom after any action
 scroll_to_bottom()
+
 
 
 

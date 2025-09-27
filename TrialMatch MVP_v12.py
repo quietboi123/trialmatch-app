@@ -96,7 +96,16 @@ st.markdown(
       }}
 
       /* -------------------------------------------------------
-         3) Your fixed white top bar (unchanged)
+         3) FONT OVERRIDE FOR MAIN HEADER
+         ------------------------------------------------------- */
+      h1 {{
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+                     Helvetica, Arial, sans-serif !important;
+        font-weight: 600;
+      }}
+
+      /* -------------------------------------------------------
+         4) Your fixed white top bar (unchanged)
          ------------------------------------------------------- */
       #tm-topbar {{
         position: fixed; top: 0; left: 0; right: 0; height: var(--tm-header-h);
@@ -122,6 +131,7 @@ st.markdown(
     """,
     unsafe_allow_html=True,
 )
+
 
 
 
@@ -652,6 +662,7 @@ else:
 
 # One last nudge to keep the view pinned to the bottom after any action
 scroll_to_bottom()
+
 
 
 

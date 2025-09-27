@@ -3,7 +3,7 @@ primaryColor = "#1E3A8A"             # dark blue for header text, buttons, highl
 backgroundColor = "#F7F7F7"          # light gray for the entire page background
 secondaryBackgroundColor = "#FFFFFF" # white for chat input, cards, and side elements
 textColor = "#000000"                # plain black text
-font = "serif"
+font = "monospace"
 
 [browser]
 gatherUsageStats = false

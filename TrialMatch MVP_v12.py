@@ -38,11 +38,13 @@ logo_b64 = _img_b64(LOGO_PATH) if LOGO_PATH.exists() else ""
 st.markdown(
     f"""
     <style>
+      /* Hide default Streamlit header */
       [data-testid="stHeader"] {{
-        display: none;  /* hide Streamlit's default header */
+        display: none;
       }}
 
-      :root {{ --tm-header-h: 100px; }}  /* increase header space */
+      /* Keep space for your fixed top bar */
+      :root {{ --tm-header-h: 100px; }}
       .block-container {{
         padding-top: calc(var(--tm-header-h) + 20px) !important;
       }}
@@ -50,17 +52,33 @@ st.markdown(
         padding-top: calc(var(--tm-header-h) + 20px) !important;
       }}
 
-      /* Extend light gray background to entire app */
+      /* LIGHT GRAY EVERYWHERE (except your white top bar) */
+      html, body,
+      [data-testid="stApp"],
       [data-testid="stAppViewContainer"],
       [data-testid="stMain"] {{
-        background-color: #f7f7f7;
+        background: #f7f7f7 !important;
       }}
 
-      /* Keep the chat input bar white */
+      /* Some Streamlit builds paint an extra white layer at the bottom.
+         Nuke any white backgrounds in immediate children of the app container. */
+      [data-testid="stAppViewContainer"] > div {{
+        background: transparent !important;
+      }}
+
+      /* Keep the chat input area WHITE (the pill + its container) */
       [data-testid="stChatInput"] {{
-        background-color: white;
+        background: white !important;
+        border-radius: 9999px !important;
+        box-shadow: 0 1px 6px rgba(0,0,0,.06) !important;
+        padding: 8px 12px !important;
+      }}
+      /* The inner input wrapper can carry its own bg — force white too */
+      [data-testid="stChatInput"] > div {{
+        background: white !important;
       }}
 
+      /* Your fixed white top bar */
       #tm-topbar {{
         position: fixed; top: 0; left: 0; right: 0; height: var(--tm-header-h);
         display: flex; align-items: center; gap: 20px;
@@ -70,12 +88,12 @@ st.markdown(
         z-index: 100000;
       }}
       #tm-topbar img {{
-        height: 90px;   /* make logo larger */
+        height: 90px;
       }}
       #tm-topbar .tm-title {{
         font-weight: 500;
         font-size: 20px;
-        color: #1E3A8A;  /* dark blue to match your theme */
+        color: #1E3A8A;
         margin: 0;
       }}
     </style>
@@ -87,6 +105,7 @@ st.markdown(
     """,
     unsafe_allow_html=True,
 )
+
 
 
 # ===== End top-left site header logo + motto =====
@@ -614,6 +633,7 @@ else:
 
 # One last nudge to keep the view pinned to the bottom after any action
 scroll_to_bottom()
+
 
 
 

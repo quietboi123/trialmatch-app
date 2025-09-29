@@ -127,7 +127,6 @@ st.markdown(
         background: rgba(0,0,0,.35);
         z-index: 100001;
       }}
-      /* Show when hash matches element id (e.g., #tm-legal or #tm-privacy) */
       .tm-modal:target {{ display: flex; }}
 
       .tm-modal .tm-box {{
@@ -164,142 +163,6 @@ st.markdown(
       <div class="tm-title">Helping Patients Access Groundbreaking New Therapies</div>
 
       <nav class="tm-nav" aria-label="Top links">
-        <!-- UPDATED hrefs -> open CSS modals -->
-        <a href="#tm-legal" aria-label="Read legal information">Legal</a>
-        <a href="#tm-privacy" aria-label="Read privacy policy">Privacy</a>
-      </nav>
-    </div>
-
-st.markdown(
-    f"""
-    <style>
-      /* Hide default Streamlit header */
-      [data-testid="stHeader"] {{
-        display: none;
-      }}
-
-      /* Keep space for your fixed top bar */
-      :root {{ --tm-header-h: 100px; }}
-      .block-container {{
-        padding-top: calc(var(--tm-header-h) + 20px) !important;
-      }}
-      [data-testid="stAppViewContainer"] .main {{
-        padding-top: calc(var(--tm-header-h) + 20px) !important;
-      }}
-
-      /* Universal light-gray backdrop */
-      body::before {{
-        content: "";
-        position: fixed;
-        inset: 0;
-        background: #f7f7f7;
-        z-index: -1;
-      }}
-      html, body,
-      [data-testid="stApp"],
-      [data-testid="stAppViewContainer"],
-      [data-testid="stMain"],
-      .block-container,
-      [data-testid="stAppViewContainer"] .main,
-      [data-testid="stBottomBlockContainer"],
-      footer,
-      [data-testid="stStatusWidget"] {{
-        background: transparent !important;
-      }}
-
-      /* Chat input stays white */
-      [data-testid^="stChatInput"] {{
-        background: #ffffff !important;
-        border-radius: 9999px !important;
-        box-shadow: 0 1px 6px rgba(0,0,0,.06) !important;
-        padding: 8px 12px !important;
-      }}
-      [data-testid^="stChatInput"] * {{ background: transparent !important; }}
-
-      /* MAIN HEADER FONT */
-      h1 {{
-        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
-                     Helvetica, Arial, sans-serif !important;
-        font-weight: 600;
-      }}
-
-      /* Smooth scroll + anchor offset */
-      html {{ scroll-behavior: smooth; }}
-      [id] {{ scroll-margin-top: calc(var(--tm-header-h) + 24px); }}
-
-      /* ======= TOP BAR ======= */
-      #tm-topbar {{
-        position: fixed; top: 0; left: 0; right: 0; height: var(--tm-header-h);
-        display: flex; align-items: center; gap: 20px;
-        padding: 12px 24px; background: white;
-        box-shadow: 0 1px 6px rgba(0,0,0,.08);
-        z-index: 100000;
-      }}
-      #tm-topbar img {{ height: 90px; }}
-
-      /* Motto (left of nav) */
-      #tm-topbar .tm-title {{
-        font-weight: 500; font-size: 20px; color: #1E3A8A; margin: 0;
-        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
-                     Helvetica, Arial, sans-serif !important;
-      }}
-
-      /* Nav (right side) */
-      #tm-topbar .tm-nav {{
-        margin-left: auto; display: flex; align-items: center; gap: 24px;
-      }}
-      #tm-topbar .tm-nav a {{
-        font-weight: 500; font-size: 20px; color: #1E3A8A; text-decoration: none;
-        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
-                     Helvetica, Arial, sans-serif !important;
-      }}
-      #tm-topbar .tm-nav a:hover {{ text-decoration: underline; }}
-
-      /* ======= MODALS (CSS-only, no JS) ======= */
-      .tm-modal {{
-        position: fixed; inset: 0; display: none;
-        align-items: center; justify-content: center;
-        background: rgba(0,0,0,.35);
-        z-index: 100001;
-      }}
-      /* Show when hash matches element id (e.g., #tm-legal or #tm-privacy) */
-      .tm-modal:target {{ display: flex; }}
-
-      .tm-modal .tm-box {{
-        position: relative; background: #fff; width: min(520px, 92vw);
-        padding: 20px 24px; border-radius: 16px;
-        box-shadow: 0 10px 30px rgba(0,0,0,.12);
-        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
-                     Helvetica, Arial, sans-serif;
-      }}
-      .tm-modal .tm-box h3 {{
-        margin: 0 0 10px; font-size: 18px; color: #111827;
-      }}
-      .tm-modal .tm-box p {{
-        margin: 6px 0; color: #374151; line-height: 1.4;
-      }}
-      .tm-modal .tm-close {{
-        position: absolute; top: 10px; right: 12px;
-        text-decoration: none; font-size: 20px; line-height: 1;
-        color: #374151;
-      }}
-      .tm-modal .tm-close:focus {{ outline: 2px solid #1E3A8A; border-radius: 6px; }}
-
-      /* Small screens */
-      @media (max-width: 640px) {{
-        #tm-topbar {{ gap: 12px; padding: 10px 16px; }}
-        #tm-topbar img {{ height: 70px; }}
-        #tm-topbar .tm-title {{ font-size: 16px; }}
-        #tm-topbar .tm-nav a {{ font-size: 16px; }}
-      }}
-    </style>
-
-    <div id="tm-topbar">
-      {"<img src='data:image/png;base64," + logo_b64 + "' alt='trialmatches logo'/>" if logo_b64 else ""}
-      <div class="tm-title">Helping Patients Access Groundbreaking New Therapies</div>
-
-      <nav class="tm-nav" aria-label="Top links">
-        <!-- UPDATED hrefs -> open CSS modals -->
         <a href="#tm-legal" aria-label="Read legal information">Legal</a>
         <a href="#tm-privacy" aria-label="Read privacy policy">Privacy</a>
       </nav>
@@ -310,10 +173,13 @@ st.markdown(
       <div class="tm-box" role="dialog" aria-modal="true" aria-labelledby="tm-legal-title">
         <a href="#" class="tm-close" aria-label="Close">×</a>
         <h3 id="tm-legal-title">Legal Notice</h3>
-        <p>This tool provides a preliminary pre-screen based on study criteria and your answers.
-        It is <strong>not</strong> medical advice or diagnosis. A clinician must confirm eligibility.</p>
-        <p>By using this site, you agree that information you submit may be reviewed by study staff
-        for the purpose of contacting you about research participation.</p>
+        <p>This site is a demonstration tool intended to show how technology might be used
+        to pre-screen for clinical trial eligibility. It does <strong>not</strong> provide
+        medical advice, diagnosis, or treatment. Nothing here should replace the judgment
+        of a qualified healthcare professional.</p>
+        <p>By using this tool, you acknowledge that it is experimental, may contain errors,
+        and is provided “as is” with no warranties of any kind. Your use of the site is
+        voluntary and at your own risk.</p>
       </div>
     </div>
 
@@ -322,19 +188,19 @@ st.markdown(
       <div class="tm-box" role="dialog" aria-modal="true" aria-labelledby="tm-privacy-title">
         <a href="#" class="tm-close" aria-label="Close">×</a>
         <h3 id="tm-privacy-title">Privacy</h3>
-        <p>We only collect the information you provide during this pre-screen (e.g., age, basic health
-        answers, contact info). If you appear eligible and consent, your details may be shared with the study team
-        for follow-up. We do not sell your data.</p>
-        <p>See our full policy or email privacy@trialmatches.example for requests.</p>
+        <p>This site collects only the information you choose to enter (for example,
+        basic health details and optional contact information). That information is used
+        solely to demonstrate how a trial pre-screen might work and, if applicable, to
+        allow follow-up about research opportunities.</p>
+        <p>No information is sold or shared beyond this purpose. Because this is a pilot
+        project without a corporate entity, there is no formal privacy office. If you have
+        concerns, you may simply choose not to submit personal details.</p>
       </div>
     </div>
     """,
     unsafe_allow_html=True,
 )
 
-    """,
-    unsafe_allow_html=True,
-)
 
 
 
@@ -870,6 +736,7 @@ else:
 
 # One last nudge to keep the view pinned to the bottom after any action
 scroll_to_bottom()
+
 
 
 

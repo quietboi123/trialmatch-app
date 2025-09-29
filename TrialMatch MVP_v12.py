@@ -435,7 +435,7 @@ def stream_openai_reply(messages):
     Streams assistant content to the UI and returns the full raw reply string.
     Display hides any machine JSON or CONTACT token during streaming.
     """
-    with st.chat_message("assistant"):
+    with st.chat_message("assistant", avatar=""):
         placeholder = st.empty()
         chunks = []
         stream = client.chat.completions.create(
@@ -549,7 +549,7 @@ for msg in st.session_state.messages:
 
     # Special renderer: a read-only snapshot of the submitted contact form
     if msg.get("type") == "contact_snapshot":
-        with st.chat_message("assistant"):
+        with st.chat_message("assistant", avatar=""):
             st.markdown("**Submitted contact details**")
             c = msg.get("contact", {})
             st.text_input("Email", value=c.get("email", ""), disabled=True)
@@ -592,7 +592,7 @@ def render_contact_form():
 
 # If we were already waiting for contact info from a previous run/session, render the form now
 if st.session_state.awaiting_contact:
-    with st.chat_message("assistant"):
+    with st.chat_message("assistant", avatar=""):
         contact = render_contact_form()
     # Keep viewport at bottom even after form render
     scroll_to_bottom()
@@ -669,7 +669,7 @@ else:
                 visible = "Great—you're likely a fit. Please complete the short contact form below."
             st.session_state.messages.append({"role": "assistant", "content": visible})
 
-            with st.chat_message("assistant"):
+            with st.chat_message("assistant", avatar=""):
                 contact = render_contact_form()
             scroll_to_bottom()
 
@@ -736,6 +736,7 @@ else:
 
 # One last nudge to keep the view pinned to the bottom after any action
 scroll_to_bottom()
+
 
 
 

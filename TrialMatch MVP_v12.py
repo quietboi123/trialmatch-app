@@ -175,9 +175,10 @@ st.markdown(
       <div class="tm-box" role="dialog" aria-modal="true" aria-labelledby="tm-legal-title">
         <a href="#" class="tm-close" aria-label="Close">×</a>
         <h3 id="tm-legal-title">Legal Notice</h3>
-        <p>This site is a demonstration tool intended to show how technology might be used to pre-screen for clinical trial eligibility. It does not provide medical advice, diagnosis, or treatment. Nothing here should replace the judgment of a qualified healthcare professional.
-
-By using this tool, you acknowledge that it is experimental, may contain errors, and is provided “as is” with no warranties of any kind. Your use of the site is voluntary and at your own risk.</p>
+        <p>This tool provides a preliminary pre-screen based on study criteria and your answers.
+        It is <strong>not</strong> medical advice or diagnosis. A clinician must confirm eligibility.</p>
+        <p>By using this site, you agree that information you submit may be reviewed by study staff
+        for the purpose of contacting you about research participation.</p>
       </div>
     </div>
 
@@ -195,6 +196,7 @@ By using this tool, you acknowledge that it is experimental, may contain errors,
     """,
     unsafe_allow_html=True,
 )
+
 
 
 
@@ -729,6 +731,7 @@ else:
 
 # One last nudge to keep the view pinned to the bottom after any action
 scroll_to_bottom()
+
 
 
 
